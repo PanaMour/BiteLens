@@ -132,6 +132,11 @@ public class MainActivity extends AppCompatActivity {
                             // Handle API errors
                             nutritionInfo.setText("Nutrition Info:\nError retrieving data.");
                             Log.e("API_ERROR", "Status code: " + response.code() + ", Message: " + response.message());
+                            try {
+                                Log.e("API_ERROR", "Error response: " + response.errorBody().string());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
 
