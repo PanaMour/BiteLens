@@ -46,10 +46,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        // Initialize UI components
         selectImageButton = findViewById(R.id.select_image_button);
         foodImage = findViewById(R.id.food_image);
         nutritionInfo = findViewById(R.id.nutrition_info);
 
+        // Set click listener for the select image button
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,11 +61,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // Launches the image picker to allow the user to select an image
     private void selectImage() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, SELECT_IMAGE_REQUEST_CODE);
     }
 
+    // Processes the selected image and recognizes food using the ML Kit Image Labeling library
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -80,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Recognizes food items in the input image using ML Kit Image Labeling
     private void recognizeFood(Bitmap bitmap) {
         InputImage image = InputImage.fromBitmap(bitmap, 0);
         ImageLabelerOptions options = new ImageLabelerOptions.Builder()
@@ -87,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         ImageLabeler labeler = ImageLabeling.getClient(options);
 
+        // Processes the image and retrieves a list of recognized labels
         labeler.process(image)
                 .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
                     @Override
@@ -112,7 +119,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isFoodRelated(String label) {
-        // Implement a method to determine if the recognized label is related to food
+
+        /*private boolean isFoodRelated(String label) {
+            // A list of common food-related keywords
+            String[] foodKeywords = {"food", "fruit", "vegetable", "meat", "drink", "beverage",
+                    "snack", "bread", "cereal", "cheese", "sweets", "dessert",
+                    "pizza", "pasta", "rice", "salad", "sandwich", "soup"};
+
+            // Convert the label to lowercase for comparison
+            String lowercaseLabel = label.toLowerCase();
+
+            // Check if any food keyword is present in the label
+            for (String keyword : foodKeywords) {
+                if (lowercaseLabel.contains(keyword)) {
+                    return true;
+                }
+            }
+
+            return false; // Return false if none of the keywords were found
+        }*/
+
         return true; // For simplicity, assume all labels are food-related
     }
 
