@@ -11,11 +11,9 @@ public interface NutritionixApi {
 
     @Headers({
             "x-app-id: 2d48b89c",
-            "x-app-key: bc5049461bafe66df01e0f68b8c7dc78",
+            "x-app-key: 892b13836fa897c79885f4777b829e22",
             "x-remote-user-id: 0"
     })
     @GET("/v2/natural/nutrients")
     Call<NutritionResponse> getNutritionInfo(@Query("query") String foodName);
-
-    Call<NutritionResponse> getNutritionInfo(String appId, String appKey, String foodName);
 }

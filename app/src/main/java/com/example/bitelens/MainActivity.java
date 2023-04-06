@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(List<ImageLabel> labels) {
                         for (ImageLabel label : labels) {
                             String text = label.getText();
+                            System.out.println("FOOD: "+text);
                             float confidence = label.getConfidence();
                             // If the recognized label is related to food, fetch the nutritional information
                             if (isFoodRelated(text)) {
@@ -113,10 +115,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchNutritionInfo(String foodName) {
-        String appId = "2d48b89c";
-        String appKey = "bc5049461bafe66df01e0f68b8c7dc78";
-
-        ApiHelper.getInstance().getNutritionixApi().getNutritionInfo(appId, appKey, foodName)
+        ApiHelper.getInstance().getNutritionixApi().getNutritionInfo(foodName)
                 .enqueue(new Callback<NutritionResponse>() {
                     @Override
                     public void onResponse(Call<NutritionResponse> call, Response<NutritionResponse> response) {
@@ -132,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             // Handle API errors
                             nutritionInfo.setText("Nutrition Info:\nError retrieving data.");
+                            Log.e("API_ERROR", "Status code: " + response.code() + ", Message: " + response.message());
                         }
                     }
 
@@ -139,8 +139,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onFailure(Call<NutritionResponse> call, Throwable t) {
                         // Handle network errors
                         nutritionInfo.setText("Nutrition Info:\nNetwork error.");
+                        Log.e("NETWORK_ERROR", t.getMessage());
                     }
                 });
     }
+
 }
 

@@ -8,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiHelper {
 
-    private static final String BASE_URL = "https://api.nutritionix.com/";
+    private static final String BASE_URL = "https://trackapi.nutritionix.com";
     private static ApiHelper instance;
     private final NutritionixApi nutritionixApi;
 
