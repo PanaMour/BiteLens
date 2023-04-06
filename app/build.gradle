@@ -7,6 +7,11 @@ android {
     namespace 'com.example.bitelens'
     compileSdk 33
 
+    configurations {
+        implementation.exclude group: 'com.google.android.gms', module: 'play-services-vision-common'
+        implementation.exclude group: 'com.google.android.gms', module: 'play-services-vision-image-labeling-internal'
+    }
+
     defaultConfig {
         applicationId "com.example.bitelens"
         minSdk 24
@@ -30,16 +35,24 @@ android {
 }
 
 dependencies {
-
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.mlkit:vision-common:17.3.0'
+    implementation 'com.google.mlkit:image-labeling-common:18.1.0'
+    implementation 'com.google.mlkit:image-labeling-default-common:17.0.0'
+    implementation 'com.google.mlkit:image-labeling:17.0.0'
+    implementation 'com.google.mlkit:image-labeling-custom:17.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation platform('com.google.firebase:firebase-bom:31.3.0')
-    implementation 'com.google.firebase:firebase-ml-vision:24.1.0'
-    implementation 'com.google.firebase:firebase-ml-vision-image-label-model:20.0.0'
+    implementation('com.google.firebase:firebase-ml-vision:24.1.0') {
+        exclude group: 'com.google.android.gms', module: 'play-services-vision-common'
+        exclude group: 'com.google.android.gms', module: 'play-services-vision-image-labeling-internal'
+        exclude group: 'com.google.android.gms', module: 'play-services-vision'
+    }
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 }
+

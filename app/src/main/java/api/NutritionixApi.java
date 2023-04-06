@@ -17,4 +17,5 @@ public interface NutritionixApi {
     @GET("/v2/natural/nutrients")
     Call<NutritionResponse> getNutritionInfo(@Query("query") String foodName);
 
+    Call<NutritionResponse> getNutritionInfo(String appId, String appKey, String foodName);
 }
