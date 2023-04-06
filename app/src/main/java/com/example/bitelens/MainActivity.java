@@ -27,7 +27,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import api.ApiHelper;
 
@@ -115,15 +117,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchNutritionInfo(String foodName) {
-        ApiHelper.getInstance().getNutritionixApi().getNutritionInfo(foodName)
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("query", foodName);
+
+        ApiHelper.getInstance().getNutritionixApi().getNutritionInfo(requestBody)
                 .enqueue(new Callback<NutritionResponse>() {
                     @Override
                     public void onResponse(Call<NutritionResponse> call, Response<NutritionResponse> response) {
                         if (response.isSuccessful()) {
                             NutritionResponse nutritionResponse = response.body();
                             if (nutritionResponse != null) {
-                                // Update the UI with the nutritional information
-                                nutritionInfo.setText("Nutrition Info:\n" + nutritionResponse.toString());
+                                NutritionResponse.Food firstFood = nutritionResponse.getFirstFood();
+                                if (firstFood != null) {
+                                    // Update the UI with the nutritional information
+                                    nutritionInfo.setText("Nutrition Info:\n" + firstFood.getFormattedNutritionInfo());
+                                } else {
+                                    // Handle cases where the response is null
+                                    nutritionInfo.setText("Nutrition Info:\nNo data found.");
+                                }
                             } else {
                                 // Handle cases where the response is null
                                 nutritionInfo.setText("Nutrition Info:\nNo data found.");

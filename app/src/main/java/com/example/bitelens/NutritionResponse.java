@@ -13,6 +13,14 @@ public class NutritionResponse {
         return foods;
     }
 
+    public Food getFirstFood() {
+        if (foods != null && !foods.isEmpty()) {
+            return foods.get(0);
+        } else {
+            return null;
+        }
+    }
+
     public static class Food {
 
         @SerializedName("food_name")
@@ -24,34 +32,32 @@ public class NutritionResponse {
         @SerializedName("serving_unit")
         private String servingUnit;
 
-        @SerializedName("calories")
+        @SerializedName("nf_calories")
         private double calories;
 
-        @SerializedName("total_fat")
+        @SerializedName("nf_total_fat")
         private double totalFat;
 
-        @SerializedName("saturated_fat")
+        @SerializedName("nf_saturated_fat")
         private double saturatedFat;
 
-        @SerializedName("cholesterol")
+        @SerializedName("nf_cholesterol")
         private double cholesterol;
 
-        @SerializedName("sodium")
+        @SerializedName("nf_sodium")
         private double sodium;
 
-        @SerializedName("total_carbohydrate")
+        @SerializedName("nf_total_carbohydrate")
         private double totalCarbohydrate;
 
-        @SerializedName("dietary_fiber")
+        @SerializedName("nf_dietary_fiber")
         private double dietaryFiber;
 
-        @SerializedName("sugars")
+        @SerializedName("nf_sugars")
         private double sugars;
 
-        @SerializedName("protein")
+        @SerializedName("nf_protein")
         private double protein;
-
-        // Add more fields if needed
 
         public String getFoodName() {
             return foodName;
@@ -101,6 +107,19 @@ public class NutritionResponse {
             return protein;
         }
 
-        // Add getter methods for any additional fields
+        public String getFormattedNutritionInfo() {
+            return "Food name: " + foodName + "\n" +
+                    "Serving quantity: " + servingQuantity + "\n" +
+                    "Serving unit: " + servingUnit + "\n" +
+                    "Calories: " + calories + "\n" +
+                    "Total fat: " + totalFat + "g" + "\n" +
+                    "Saturated fat: " + saturatedFat + "g" + "\n" +
+                    "Cholesterol: " + cholesterol + "mg" + "\n" +
+                    "Sodium: " + sodium + "mg" + "\n" +
+                    "Total carbohydrate: " + totalCarbohydrate + "g" + "\n" +
+                    "Dietary fiber: " + dietaryFiber + "g" + "\n" +
+                    "Sugars: " + sugars + "g" + "\n" +
+                    "Protein: " + protein + "g";
+        }
     }
 }
