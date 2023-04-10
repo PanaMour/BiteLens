@@ -2,10 +2,16 @@ package com.example.bitelens;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -40,6 +47,7 @@ import api.ApiHelper;
 public class MainActivity extends AppCompatActivity {
 
     private static final int SELECT_IMAGE_REQUEST_CODE = 1;
+    private static final int CAPTURE_IMAGE_REQUEST_CODE = 2;
 
     private Button selectImageButton;
     private ImageView foodImage;
@@ -67,30 +75,69 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void requestCameraPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAPTURE_IMAGE_REQUEST_CODE);
+    }
 
     // Launches the image picker to allow the user to select an image
     private void selectImage() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, SELECT_IMAGE_REQUEST_CODE);
+        final CharSequence[] options = {"Take Photo", "Choose from Gallery", "Cancel"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("Choose a photo");
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (options[which].equals("Take Photo")) {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        requestCameraPermission();
+                    } else {
+                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                            startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST_CODE);
+                        }
+                    }
+                } else if (options[which].equals("Choose from Gallery")) {
+                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(intent, SELECT_IMAGE_REQUEST_CODE);
+                } else if (options[which].equals("Cancel")) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
     }
+
 
     // Processes the selected image and recognizes food using the ML Kit Image Labeling library
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == SELECT_IMAGE_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
+        if (resultCode == RESULT_OK && data != null) {
+            Bitmap bitmap = null;
 
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+            if (requestCode == SELECT_IMAGE_REQUEST_CODE) {
+                Uri selectedImage = data.getData();
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else if (requestCode == CAPTURE_IMAGE_REQUEST_CODE) {
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    bitmap = (Bitmap) extras.get("data");
+                }
+            }
+
+            if (bitmap != null) {
                 foodImage.setImageBitmap(bitmap);
                 recognizeFood(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
+
 
     // Recognizes food items in the input image using ML Kit Image Labeling
     private void recognizeFood(Bitmap bitmap) {
@@ -119,6 +166,12 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
 
+                        if (foodConfidences.isEmpty()) {
+                            loadingIndicator.setVisibility(View.GONE);
+                            nutritionInfo.setText("Nutrition Info:\nNo food recognized.");
+                            return;
+                        }
+
                         // Fetch nutritional information using the list of FoodConfidence objects
                         fetchNutritionInfo(foodConfidences);
                     }
@@ -135,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
     private boolean isFoodRelated(String label) {
 
         // A list of common food-related keywords
@@ -144,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 "rice", "salad", "sandwich", "soup", "seafood", "fish", "poultry",
                 "cake", "cookie", "pastry", "chocolate", "ice cream", "sauce", "fast food",
                 "coffee", "tea", "wine", "beer", "cocktail", "juice", "smoothie","icing",
-                "tomato", "cupcake"
+                "tomato", "cupcake", "banana"
         };
 
         // Convert the label to lowercase for comparison
@@ -218,6 +272,23 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("NETWORK_ERROR", t.getMessage());
                     }
                 });
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == CAPTURE_IMAGE_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission was granted, open the camera
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST_CODE);
+                }
+            } else {
+                // Permission was denied, show a message
+                Toast.makeText(this, "Camera permission denied.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 }
