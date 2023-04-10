@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     private Button selectImageButton;
     private ImageView foodImage;
     private TextView nutritionInfo;
+    private LinearLayout loadingIndicator;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         selectImageButton = findViewById(R.id.select_image_button);
         foodImage = findViewById(R.id.food_image);
         nutritionInfo = findViewById(R.id.nutrition_info);
+        loadingIndicator = findViewById(R.id.loading_layout);
 
         // Set click listener for the select image button
         selectImageButton.setOnClickListener(new View.OnClickListener() {
@@ -89,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Recognizes food items in the input image using ML Kit Image Labeling
     private void recognizeFood(Bitmap bitmap) {
+        loadingIndicator.setVisibility(View.VISIBLE);
         InputImage image = InputImage.fromBitmap(bitmap, 0);
         ImageLabelerOptions options = new ImageLabelerOptions.Builder()
                 .setConfidenceThreshold(0.7f)
@@ -100,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
                     @Override
                     public void onSuccess(List<ImageLabel> labels) {
+
                         List<FoodConfidence> foodConfidences = new ArrayList<>();
 
                         for (ImageLabel label : labels) {
@@ -119,7 +126,10 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        loadingIndicator.setVisibility(View.GONE);
                         // Handle any errors in the labeling process
+                        nutritionInfo.setText("Nutrition Info:\nError recognizing food.");
+                        Log.e("RECOGNITION_ERROR", e.getMessage());
                     }
                 });
     }
@@ -133,7 +143,8 @@ public class MainActivity extends AppCompatActivity {
                 "bread", "cereal", "cheese", "sweets", "dessert", "pizza", "pasta",
                 "rice", "salad", "sandwich", "soup", "seafood", "fish", "poultry",
                 "cake", "cookie", "pastry", "chocolate", "ice cream", "sauce", "fast food",
-                "coffee", "tea", "wine", "beer", "cocktail", "juice", "smoothie","icing"
+                "coffee", "tea", "wine", "beer", "cocktail", "juice", "smoothie","icing",
+                "tomato", "cupcake"
         };
 
         // Convert the label to lowercase for comparison
@@ -176,15 +187,19 @@ public class MainActivity extends AppCompatActivity {
                                 NutritionResponse.Food currentFood = nutritionResponse.getFood(0);
                                 if (currentFood != null) {
                                     // Update the UI with the nutritional information and confidence value
+                                    loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText("Nutrition Info:\n" + currentFood.getFormattedNutritionInfo()
                                             + "\n\nConfidence: " + String.format("%.2f", confidence * 100) + "%");
                                 } else {
+                                    loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText("Nutrition Info:\nNo data found.");
                                 }
                             } else {
+                                loadingIndicator.setVisibility(View.GONE);
                                 nutritionInfo.setText("Nutrition Info:\nNo data found.");
                             }
                         } else {
+                            loadingIndicator.setVisibility(View.GONE);
                             // Handle API errors
                             Log.e("API_ERROR", "Status code: " + response.code() + ", Message: " + response.message());
                             try {
@@ -198,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<NutritionResponse> call, Throwable t) {
                         // Handle network errors
+                        loadingIndicator.setVisibility(View.GONE);
                         nutritionInfo.setText("Nutrition Info:\nNetwork error.");
                         Log.e("NETWORK_ERROR", t.getMessage());
                     }
