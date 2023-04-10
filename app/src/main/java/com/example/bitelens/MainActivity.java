@@ -27,6 +27,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,16 +100,20 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
                     @Override
                     public void onSuccess(List<ImageLabel> labels) {
+                        List<FoodConfidence> foodConfidences = new ArrayList<>();
+
                         for (ImageLabel label : labels) {
                             String text = label.getText();
-                            System.out.println("FOOD: "+text);
+                            System.out.println("FOOD: " + text);
                             float confidence = label.getConfidence();
-                            // If the recognized label is related to food, fetch the nutritional information
+                            // If the recognized label is related to food, add it to the foodConfidences list
                             if (isFoodRelated(text)) {
-                                fetchNutritionInfo(text);
-                                break;
+                                foodConfidences.add(new FoodConfidence(text, confidence));
                             }
                         }
+
+                        // Fetch nutritional information using the list of FoodConfidence objects
+                        fetchNutritionInfo(foodConfidences);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -118,31 +124,45 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+
     private boolean isFoodRelated(String label) {
 
-        /*private boolean isFoodRelated(String label) {
-            // A list of common food-related keywords
-            String[] foodKeywords = {"food", "fruit", "vegetable", "meat", "drink", "beverage",
-                    "snack", "bread", "cereal", "cheese", "sweets", "dessert",
-                    "pizza", "pasta", "rice", "salad", "sandwich", "soup"};
+        // A list of common food-related keywords
+        String[] foodKeywords = {
+                "fruit", "vegetable", "meat", "drink", "beverage", "snack",
+                "bread", "cereal", "cheese", "sweets", "dessert", "pizza", "pasta",
+                "rice", "salad", "sandwich", "soup", "seafood", "fish", "poultry",
+                "cake", "cookie", "pastry", "chocolate", "ice cream", "sauce", "fast food",
+                "coffee", "tea", "wine", "beer", "cocktail", "juice", "smoothie","icing"
+        };
 
-            // Convert the label to lowercase for comparison
-            String lowercaseLabel = label.toLowerCase();
+        // Convert the label to lowercase for comparison
+        String lowercaseLabel = label.toLowerCase();
 
-            // Check if any food keyword is present in the label
-            for (String keyword : foodKeywords) {
-                if (lowercaseLabel.contains(keyword)) {
-                    return true;
-                }
+        // Check if any food keyword is present in the label
+        for (String keyword : foodKeywords) {
+            if (lowercaseLabel.contains(keyword)) {
+                return true;
             }
+        }
 
-            return false; // Return false if none of the keywords were found
-        }*/
-
-        return true; // For simplicity, assume all labels are food-related
+        return false; // Return false if none of the keywords were found
     }
 
-    private void fetchNutritionInfo(String foodName) {
+
+    private void fetchNutritionInfo(List<FoodConfidence> foodConfidences) {
+        if (foodConfidences == null || foodConfidences.isEmpty()) {
+            nutritionInfo.setText("Nutrition Info:\nNo data found.");
+            return;
+        }
+
+        // Sort the foodConfidences list in descending order of confidence
+        Collections.sort(foodConfidences, (o1, o2) -> Float.compare(o2.getConfidence(), o1.getConfidence()));
+
+        FoodConfidence highestConfidenceFood = foodConfidences.get(0);
+        String foodName = highestConfidenceFood.getName();
+        float confidence = highestConfidenceFood.getConfidence();
+
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("query", foodName);
 
@@ -153,21 +173,19 @@ public class MainActivity extends AppCompatActivity {
                         if (response.isSuccessful()) {
                             NutritionResponse nutritionResponse = response.body();
                             if (nutritionResponse != null) {
-                                NutritionResponse.Food firstFood = nutritionResponse.getFirstFood();
-                                if (firstFood != null) {
-                                    // Update the UI with the nutritional information
-                                    nutritionInfo.setText("Nutrition Info:\n" + firstFood.getFormattedNutritionInfo());
+                                NutritionResponse.Food currentFood = nutritionResponse.getFood(0);
+                                if (currentFood != null) {
+                                    // Update the UI with the nutritional information and confidence value
+                                    nutritionInfo.setText("Nutrition Info:\n" + currentFood.getFormattedNutritionInfo()
+                                            + "\n\nConfidence: " + String.format("%.2f", confidence * 100) + "%");
                                 } else {
-                                    // Handle cases where the response is null
                                     nutritionInfo.setText("Nutrition Info:\nNo data found.");
                                 }
                             } else {
-                                // Handle cases where the response is null
                                 nutritionInfo.setText("Nutrition Info:\nNo data found.");
                             }
                         } else {
                             // Handle API errors
-                            nutritionInfo.setText("Nutrition Info:\nError retrieving data.");
                             Log.e("API_ERROR", "Status code: " + response.code() + ", Message: " + response.message());
                             try {
                                 Log.e("API_ERROR", "Error response: " + response.errorBody().string());

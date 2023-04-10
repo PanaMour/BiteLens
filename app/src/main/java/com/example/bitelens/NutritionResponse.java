@@ -21,6 +21,14 @@ public class NutritionResponse {
         }
     }
 
+    public Food getFood(int index) {
+        if (foods != null && !foods.isEmpty()) {
+            return foods.get(index);
+        } else {
+            return null;
+        }
+    }
+
     public static class Food {
 
         @SerializedName("food_name")
