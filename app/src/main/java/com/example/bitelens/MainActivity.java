@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int SELECT_IMAGE_REQUEST_CODE = 1;
     private static final int CAPTURE_IMAGE_REQUEST_CODE = 2;
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 3;
 
     private Button selectImageButton;
     private ImageView foodImage;
@@ -76,9 +77,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAPTURE_IMAGE_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
     }
-
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SELECT_IMAGE_REQUEST_CODE);
+    }
     // Launches the image picker to allow the user to select an image
     private void selectImage() {
         final CharSequence[] options = {"Take Photo", "Choose from Gallery", "Cancel"};
@@ -98,8 +101,13 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 } else if (options[which].equals("Choose from Gallery")) {
-                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, SELECT_IMAGE_REQUEST_CODE);
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        requestStoragePermission();
+                    }else {
+                        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        startActivityForResult(intent, SELECT_IMAGE_REQUEST_CODE);
+                    }
                 } else if (options[which].equals("Cancel")) {
                     dialog.dismiss();
                 }
@@ -107,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
         });
         builder.show();
     }
-
 
     // Processes the selected image and recognizes food using the ML Kit Image Labeling library
     @Override
@@ -137,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 
     // Recognizes food items in the input image using ML Kit Image Labeling
     private void recognizeFood(Bitmap bitmap) {
@@ -186,9 +192,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
-
     private boolean isFoodRelated(String label) {
 
         // A list of common food-related keywords
@@ -213,7 +216,6 @@ public class MainActivity extends AppCompatActivity {
 
         return false; // Return false if none of the keywords were found
     }
-
 
     private void fetchNutritionInfo(List<FoodConfidence> foodConfidences) {
         if (foodConfidences == null || foodConfidences.isEmpty()) {
@@ -277,19 +279,26 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == CAPTURE_IMAGE_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission was granted, open the camera
+        if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+            boolean allPermissionsGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allPermissionsGranted = false;
+                    break;
+                }
+            }
+
+            if (allPermissionsGranted) {
+                // Permissions were granted, open the camera
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST_CODE);
                 }
             } else {
-                // Permission was denied, show a message
-                Toast.makeText(this, "Camera permission denied.", Toast.LENGTH_SHORT).show();
+                // Some permissions were denied, show a message
+                Toast.makeText(this, "Camera and storage permissions are required.", Toast.LENGTH_SHORT).show();
             }
         }
     }
-
 }
 
