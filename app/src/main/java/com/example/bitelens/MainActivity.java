@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView foodImage;
     private TextView nutritionInfo;
     private LinearLayout loadingIndicator;
-
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +76,10 @@ public class MainActivity extends AppCompatActivity {
                 selectImage();
             }
         });
+
+        db = FirebaseFirestore.getInstance();
     }
+
     private void requestCameraPermission() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
     }

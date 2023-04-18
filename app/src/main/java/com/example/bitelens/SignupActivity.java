@@ -14,18 +14,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SignupActivity extends AppCompatActivity {
 
     private EditText emailEditText;
     private EditText passwordEditText;
     private EditText confirmPasswordEditText;
+    private EditText nameEditText;
+    private EditText surnameEditText;
+    private EditText locationEditText;
     private Button signUpButton;
     private TextView loginTextView;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +44,12 @@ public class SignupActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.email);
         passwordEditText = findViewById(R.id.password);
         confirmPasswordEditText = findViewById(R.id.confirm_password);
+        nameEditText = findViewById(R.id.name);
+        surnameEditText = findViewById(R.id.surname);
         signUpButton = findViewById(R.id.signup_button);
         loginTextView = findViewById(R.id.login_link);
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,6 +107,19 @@ public class SignupActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign up success
                             Toast.makeText(SignupActivity.this, "Sign Up Successful", Toast.LENGTH_SHORT).show();
+
+                            // Get user information
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            String uid = firebaseUser.getUid();
+                            String name = nameEditText.getText().toString().trim();
+                            String surname = surnameEditText.getText().toString().trim();
+                            //TODO add location listener and permission check
+                            String location = "LOCATION";
+                            String token = ""; // You need to fetch the user token here
+
+                            // Add user data to Firestore
+                            addDataToFirestore(uid, name, surname, location, token);
+
                             // Navigate to LoginActivity
                             Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
                             startActivity(intent);
@@ -107,5 +131,25 @@ public class SignupActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    private void addDataToFirestore(String uid, String name, String surname, String location, String token) {
+        User user = new User(uid, name, surname, location, token);
+        db.collection("users")
+                .document(uid)
+                .set(user)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(SignupActivity.this, "User data added to Firestore.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(SignupActivity.this, "Failed to add user data to Firestore.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
 
 }
