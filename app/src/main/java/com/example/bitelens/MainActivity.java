@@ -117,8 +117,26 @@ public class MainActivity extends AppCompatActivity {
                 // Handle the Dashboard menu item click
                 Intent dashboardIntent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(dashboardIntent);
+                finish();
                 break;
-                // Add more cases for other menu items
+            case R.id.nav_mealplanning:
+                Intent mealplanningIntent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(mealplanningIntent);
+                finish();
+                break;
+            case R.id.nav_history:
+                Intent nav_history = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(nav_history);
+                finish();
+                break;
+            case R.id.nav_statistics:
+                Intent nav_statistics = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(nav_statistics);
+                finish();
+                break;
+            case R.id.nav_logout:
+                //
+                break;
             }
             drawerLayout.closeDrawers();
         }
