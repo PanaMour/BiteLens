@@ -3,23 +3,23 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_dashboard"
-            android:icon="@drawable/common_full_open_on_phone"
+            android:icon="@drawable/dashboardlogo"
             android:title="Dashboard" />
         <item
             android:id="@+id/nav_mealplanning"
-            android:icon="@drawable/common_full_open_on_phone"
+            android:icon="@drawable/mealplanninglogo"
             android:title="Meal Planning" />
         <item
             android:id="@+id/nav_history"
-            android:icon="@drawable/common_full_open_on_phone"
+            android:icon="@drawable/historylogo"
             android:title="History" />
         <item
             android:id="@+id/nav_statistics"
-            android:icon="@drawable/common_full_open_on_phone"
+            android:icon="@drawable/statisticslogo"
             android:title="Statistics" />
         <item
             android:id="@+id/nav_logout"
-            android:icon="@drawable/common_full_open_on_phone"
+            android:icon="@drawable/logoutlogo"
             android:title="Logout" />
     </group>
 </menu>
