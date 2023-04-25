@@ -4,22 +4,22 @@
         <item
             android:id="@+id/nav_dashboard"
             android:icon="@drawable/dashboardlogo"
-            android:title="Dashboard" />
+            android:title="@string/dashboard" />
         <item
             android:id="@+id/nav_mealplanning"
             android:icon="@drawable/mealplanninglogo"
-            android:title="Meal Planning" />
+            android:title="@string/meal_planning" />
         <item
             android:id="@+id/nav_history"
             android:icon="@drawable/historylogo"
-            android:title="History" />
+            android:title="@string/history" />
         <item
             android:id="@+id/nav_statistics"
             android:icon="@drawable/statisticslogo"
-            android:title="Statistics" />
+            android:title="@string/statistics" />
         <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/logoutlogo"
-            android:title="Logout" />
+            android:title="@string/logout" />
     </group>
 </menu>

@@ -4,4 +4,9 @@
     <string name="navigation_drawer_open">Drawer Open</string>
     <string name="navigation_drawer_close">Drawer Close</string>
     <string name="menu">Menu</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="meal_planning">Meal Planning</string>
+    <string name="history">History</string>
+    <string name="statistics">Statistics</string>
+    <string name="logout">Logout</string>
 </resources>
