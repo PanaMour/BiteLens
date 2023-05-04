@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.drawable.bitelenslogo); // Replace with your menu icon
+            actionBar.setHomeAsUpIndicator(R.drawable.bitelenslogo);
         }
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         switch (menuItem.getItemId()) {
             case R.id.nav_dashboard:
                 // Handle the Dashboard menu item click
-                Intent dashboardIntent = new Intent(MainActivity.this, LoginActivity.class);
+                Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
                 startActivity(dashboardIntent);
                 finish();
                 break;
