@@ -10,4 +10,6 @@
     <color name="gray">#979494</color>
     <color name="link">#2196F3</color>
     <color name="logobg">#e6ded3</color>
+    <color name="contrast">#d3dbe6</color>
+    <color name="complimentary">#ccb492</color>
 </resources>
