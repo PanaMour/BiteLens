@@ -119,15 +119,13 @@
                             android:textStyle="bold" />
                 </LinearLayout>
                 <ProgressBar
-                    android:id="@+id/progress_bar"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="8dp"
+                    android:id="@+id/consumption_progress"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
                     android:indeterminate="false"
-                    android:max="100"
-                    android:progress="75"
-                    android:progressTint="@color/white" />
+                    android:layout_gravity="center"
+                    android:progressDrawable="@drawable/circular_progress_bar" />
+
 
                 <Button
                     android:id="@+id/progress_button"
