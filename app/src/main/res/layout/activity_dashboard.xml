@@ -124,7 +124,8 @@
                     layout="@layout/circular_progress_with_text"
                     android:layout_width="200dp"
                     android:layout_height="200dp"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"
+                    android:layout_marginTop="10dp" />
 
                 <Button
                     android:id="@+id/progress_button"

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
@@ -46,11 +47,11 @@ public class DashboardActivity extends AppCompatActivity {
 
         CustomCircularProgressBar progressBar = findViewById(R.id.circular_progress_bar);
         TextView progressText = findViewById(R.id.progress_text);
-
+        //LinearLayout linearLayout = findViewById(R.id.linearCircle);
         // Update progress and text values
         int progress = 75; // Your progress value (0-100)
         progressBar.setProgress(progress);
-        progressText.setText("2000 calories");
+        progressText.setText("1444/2000");
 
     }
 
