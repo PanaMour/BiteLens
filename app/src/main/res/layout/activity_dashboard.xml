@@ -119,13 +119,12 @@
                             android:textStyle="bold" />
                 </LinearLayout>
 
-                <com.example.bitelens.CustomCircularProgressBar
-                    android:id="@+id/custom_circular_progress_bar"
+                <include
+                    android:id="@+id/circular_progress_with_text"
+                    layout="@layout/circular_progress_with_text"
                     android:layout_width="200dp"
                     android:layout_height="200dp"
-                    android:layout_gravity="center"/>
-
-
+                    android:layout_gravity="center" />
 
                 <Button
                     android:id="@+id/progress_button"

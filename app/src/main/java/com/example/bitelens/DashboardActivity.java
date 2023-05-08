@@ -3,6 +3,7 @@ package com.example.bitelens;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -11,6 +12,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -23,6 +25,7 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -41,9 +44,13 @@ public class DashboardActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.navigation_view);
         setupDrawerContent(navigationView);
 
-        CustomCircularProgressBar customCircularProgressBar = findViewById(R.id.custom_circular_progress_bar);
-        float progressValue = 75; // Set this value based on your requirement (0-100)
-        customCircularProgressBar.setProgress(progressValue);
+        CustomCircularProgressBar progressBar = findViewById(R.id.circular_progress_bar);
+        TextView progressText = findViewById(R.id.progress_text);
+
+        // Update progress and text values
+        int progress = 75; // Your progress value (0-100)
+        progressBar.setProgress(progress);
+        progressText.setText("2000 calories");
 
     }
 

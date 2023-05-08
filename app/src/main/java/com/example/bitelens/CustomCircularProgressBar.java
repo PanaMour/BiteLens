@@ -27,7 +27,7 @@ public class CustomCircularProgressBar extends View {
         mRectF = new RectF();
         mBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBackgroundPaint.setStyle(Paint.Style.STROKE);
-        mBackgroundPaint.setStrokeWidth(20);
+        mBackgroundPaint.setStrokeWidth(30);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             bColor = getContext().getResources().getColor(R.color.complimentary);
             fColor = getContext().getResources().getColor(R.color.purple_200);
@@ -36,7 +36,7 @@ public class CustomCircularProgressBar extends View {
 
         mProgressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mProgressPaint.setStyle(Paint.Style.STROKE);
-        mProgressPaint.setStrokeWidth(20);
+        mProgressPaint.setStrokeWidth(30);
         mProgressPaint.setColor(fColor);
     }
 
@@ -46,7 +46,7 @@ public class CustomCircularProgressBar extends View {
         float width = getWidth();
         float height = getHeight();
 
-        mRectF.set(10, 10, width - 10, height - 10);
+        mRectF.set(15, 15, width - 15, height - 15);
 
         canvas.drawArc(mRectF, 0, 360, false, mBackgroundPaint);
         canvas.drawArc(mRectF, -90, mSweepAngle, false, mProgressPaint);
