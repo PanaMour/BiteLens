@@ -40,6 +40,11 @@ public class DashboardActivity extends AppCompatActivity {
 
         NavigationView navigationView = findViewById(R.id.navigation_view);
         setupDrawerContent(navigationView);
+
+        CustomCircularProgressBar customCircularProgressBar = findViewById(R.id.custom_circular_progress_bar);
+        float progressValue = 75; // Set this value based on your requirement (0-100)
+        customCircularProgressBar.setProgress(progressValue);
+
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
