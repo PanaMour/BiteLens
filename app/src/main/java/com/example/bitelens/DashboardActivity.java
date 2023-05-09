@@ -3,24 +3,33 @@ package com.example.bitelens;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -30,9 +39,13 @@ public class DashboardActivity extends AppCompatActivity {
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private FirebaseFirestore firebaseFirestore;
     private TextView usernameTextView;
+    private TextView progressPercentage;
     private TextView caloriesGoal;
     private TextView caloriesConsumed;
-
+    private int consumed;
+    private int goal;
+    CustomCircularProgressBar progressBar;
+    TextView progressText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +54,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         usernameTextView = findViewById(R.id.welcomeText);
+        progressPercentage = findViewById(R.id.progress_percentage);
         caloriesGoal = findViewById(R.id.calories_goal);
         caloriesConsumed = findViewById(R.id.total_calories);
 
@@ -55,6 +69,24 @@ public class DashboardActivity extends AppCompatActivity {
                             if (username != null) {
                                 usernameTextView.setText("Welcome, " + username);
                             }
+
+                            // Fetch calories_consumed and calories_goal from the database
+                            Integer consumedFromDatabase = documentSnapshot.getLong("calories_consumed").intValue();
+                            Integer goalFromDatabase = documentSnapshot.getLong("calories_goal").intValue();
+
+                            // Update the UI with fetched values
+                            caloriesConsumed.setText(String.valueOf(consumedFromDatabase));
+                            caloriesGoal.setText(String.valueOf(goalFromDatabase));
+
+                            // Update progress and text values
+                            consumed = consumedFromDatabase;
+                            goal = goalFromDatabase;
+
+                            float progress = (float) consumed / goal * 100;
+                            String progressString = String.format("%.0f%%", progress);
+                            progressPercentage.setText(progressString);
+                            progressBar.setProgress(progress);
+                            progressText.setText(consumed + " / " + goal);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -64,6 +96,13 @@ public class DashboardActivity extends AppCompatActivity {
                         }
                     });
         }
+        Button setNewGoalButton = findViewById(R.id.progress_button);
+        setNewGoalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSetNewGoalDialog();
+            }
+        });
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -83,21 +122,76 @@ public class DashboardActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.navigation_view);
         setupDrawerContent(navigationView);
 
-        CustomCircularProgressBar progressBar = findViewById(R.id.circular_progress_bar);
-        TextView progressText = findViewById(R.id.progress_text);
-        //LinearLayout linearLayout = findViewById(R.id.linearCircle);
+        progressBar = findViewById(R.id.circular_progress_bar);
+        progressText = findViewById(R.id.progress_text);
         // Update progress and text values
         String consumedStr = caloriesConsumed.getText().toString();
         String goalStr = caloriesGoal.getText().toString();
 
-        int consumed = Integer.parseInt(consumedStr);
-        int goal = Integer.parseInt(goalStr);
+        consumed = Integer.parseInt(consumedStr);
+        goal = Integer.parseInt(goalStr);
 
-        float progress = (float) 1500 / goal * 100;
+        float progress = (float) consumed / goal * 100;
+        String progressString = String.format("%.0f%%", progress);
+        progressPercentage.setText(progressString);
         progressBar.setProgress(progress);
         progressText.setText(consumedStr + " / " + goalStr);
 
 
+    }
+    private void showSetNewGoalDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(DashboardActivity.this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_set_new_goal, null);
+        builder.setView(dialogView);
+
+        final EditText newGoalEditText = dialogView.findViewById(R.id.new_goal);
+        builder.setTitle("Set New Calories Goal")
+                .setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String newGoal = newGoalEditText.getText().toString().trim();
+                        if (!TextUtils.isEmpty(newGoal)) {
+                            int newGoalInt = Integer.parseInt(newGoal);
+                            if (newGoalInt >= 500 && newGoalInt <= 5000) {
+                                updateCaloriesGoal(newGoalInt);
+                            } else {
+                                Toast.makeText(DashboardActivity.this, "Calories goal must be between 500 and 5,000", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+        builder.create().show();
+    }
+
+    private void updateCaloriesGoal(int newGoal) {
+        TextView caloriesGoalTextView = findViewById(R.id.calories_goal);
+        caloriesGoalTextView.setText(String.valueOf(newGoal));
+        goal = newGoal;
+        float progress = (float) consumed / goal * 100;
+        String progressString = String.format("%.0f%%", progress);
+        progressPercentage.setText(progressString);
+        progressBar.setProgress(progress);
+        progressText.setText(consumed + " / " + goal);
+
+        // Assuming you have the user's UID, for example, from FirebaseAuth
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Update the calories goal in your database here
+        // Call the appropriate method depending on which database you are using
+        updateCaloriesGoalInDatabase(uid, newGoal);
+    }
+
+    private void updateCaloriesGoalInDatabase(String uid, int newGoal) {
+        DocumentReference userReference = FirebaseFirestore.getInstance().collection("users").document(uid);
+        userReference.update("calories_goal", newGoal);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
