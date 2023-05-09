@@ -209,12 +209,12 @@ public class DashboardActivity extends AppCompatActivity {
                 finish();
                 break;*/
             case R.id.nav_mealplanning:
-                Intent mealplanningIntent = new Intent(DashboardActivity.this, LoginActivity.class);
+                Intent mealplanningIntent = new Intent(DashboardActivity.this, MainActivity.class);
                 startActivity(mealplanningIntent);
                 finish();
                 break;
             case R.id.nav_history:
-                Intent nav_history = new Intent(DashboardActivity.this, LoginActivity.class);
+                Intent nav_history = new Intent(DashboardActivity.this, MainActivity.class);
                 startActivity(nav_history);
                 finish();
                 break;

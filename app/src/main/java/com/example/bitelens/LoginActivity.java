@@ -102,7 +102,7 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.nav_mealplanning:
-                Intent mealplanningIntent = new Intent(LoginActivity.this, LoginActivity.class);
+                Intent mealplanningIntent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(mealplanningIntent);
                 finish();
                 break;
