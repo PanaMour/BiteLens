@@ -36,7 +36,7 @@
                     android:id="@+id/welcomeText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Welcome, (User)"
+                    android:text="Welcome,"
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
@@ -88,7 +88,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="100"
+                        android:text="0"
                         android:textSize="18sp"
                         android:textStyle="bold" />
                 </LinearLayout>

@@ -97,7 +97,7 @@ public class LoginActivity extends AppCompatActivity {
         switch (menuItem.getItemId()) {
             case R.id.nav_dashboard:
                 // Handle the Dashboard menu item click
-                Intent dashboardIntent = new Intent(LoginActivity.this, MainActivity.class);
+                Intent dashboardIntent = new Intent(LoginActivity.this, DashboardActivity.class);
                 startActivity(dashboardIntent);
                 finish();
                 break;
