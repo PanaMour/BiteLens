@@ -33,9 +33,10 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/welcomeText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hi, (User)"
+                    android:text="Welcome, (User)"
                     android:textSize="24sp"
                     android:textStyle="bold" />
 

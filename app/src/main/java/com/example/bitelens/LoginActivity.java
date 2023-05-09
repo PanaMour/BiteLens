@@ -26,6 +26,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -171,8 +173,10 @@ public class LoginActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success
+                            String uid = mAuth.getCurrentUser().getUid();
+                            updateUserUidInDatabase(uid);
                             Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
                             startActivity(intent);
                             finish();
                         } else {
@@ -182,5 +186,8 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-
+    private void updateUserUidInDatabase(String uid) {
+        DocumentReference userReference = FirebaseFirestore.getInstance().collection("users").document(uid);
+        userReference.update("uid", uid);
+    }
 }

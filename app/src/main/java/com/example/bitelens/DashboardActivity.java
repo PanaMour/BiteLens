@@ -1,5 +1,6 @@
 package com.example.bitelens;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,18 +16,55 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class DashboardActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+    private FirebaseFirestore firebaseFirestore;
+    private TextView usernameTextView;
+    private TextView caloriesGoal;
+    private TextView caloriesConsumed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        firebaseFirestore = FirebaseFirestore.getInstance();
+        usernameTextView = findViewById(R.id.welcomeText);
+        caloriesGoal = findViewById(R.id.calories_goal);
+        caloriesConsumed = findViewById(R.id.total_calories);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String uid = user.getUid();
+            firebaseFirestore.collection("users").document(uid).get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            String username = documentSnapshot.getString("name");
+                            if (username != null) {
+                                usernameTextView.setText("Welcome, " + username);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                        }
+                    });
+        }
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -49,9 +87,16 @@ public class DashboardActivity extends AppCompatActivity {
         TextView progressText = findViewById(R.id.progress_text);
         //LinearLayout linearLayout = findViewById(R.id.linearCircle);
         // Update progress and text values
-        int progress = 75; // Your progress value (0-100)
+        String consumedStr = caloriesConsumed.getText().toString();
+        String goalStr = caloriesGoal.getText().toString();
+
+        int consumed = Integer.parseInt(consumedStr);
+        int goal = Integer.parseInt(goalStr);
+
+        float progress = (float) 1500 / goal * 100;
         progressBar.setProgress(progress);
-        progressText.setText("1444/2000");
+        progressText.setText(consumedStr + " / " + goalStr);
+
 
     }
 
