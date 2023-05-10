@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         // Initialize UI components
         selectImageButton = findViewById(R.id.select_image_button);
         foodImage = findViewById(R.id.food_image);
-        nutritionInfo = findViewById(R.id.nutrition_info);
+        nutritionInfo = findViewById(R.id.nutinfo);
         loadingIndicator = findViewById(R.id.loading_layout);
 
         // Set click listener for the select image button
@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (foodConfidences.isEmpty()) {
                             loadingIndicator.setVisibility(View.GONE);
-                            nutritionInfo.setText("Nutrition Info:\nNo food recognized.");
+                            nutritionInfo.setText("No food recognized.");
                             return;
                         }
 
@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Exception e) {
                         loadingIndicator.setVisibility(View.GONE);
                         // Handle any errors in the labeling process
-                        nutritionInfo.setText("Nutrition Info:\nError recognizing food.");
+                        nutritionInfo.setText("Error recognizing food.");
                         Log.e("RECOGNITION_ERROR", e.getMessage());
                     }
                 });
@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchNutritionInfo(List<FoodConfidence> foodConfidences) {
         if (foodConfidences == null || foodConfidences.isEmpty()) {
-            nutritionInfo.setText("Nutrition Info:\nNo data found.");
+            nutritionInfo.setText("No data found.");
             return;
         }
 
@@ -330,15 +330,15 @@ public class MainActivity extends AppCompatActivity {
                                 if (currentFood != null) {
                                     // Update the UI with the nutritional information and confidence value
                                     loadingIndicator.setVisibility(View.GONE);
-                                    nutritionInfo.setText("Nutrition Info:\n" + currentFood.getFormattedNutritionInfo()
+                                    nutritionInfo.setText(currentFood.getFormattedNutritionInfo()
                                             + "\n\nConfidence: " + String.format("%.2f", confidence * 100) + "%");
                                 } else {
                                     loadingIndicator.setVisibility(View.GONE);
-                                    nutritionInfo.setText("Nutrition Info:\nNo data found.");
+                                    nutritionInfo.setText("No data found.");
                                 }
                             } else {
                                 loadingIndicator.setVisibility(View.GONE);
-                                nutritionInfo.setText("Nutrition Info:\nNo data found.");
+                                nutritionInfo.setText("No data found.");
                             }
                         } else {
                             loadingIndicator.setVisibility(View.GONE);
@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onFailure(Call<NutritionResponse> call, Throwable t) {
                         // Handle network errors
                         loadingIndicator.setVisibility(View.GONE);
-                        nutritionInfo.setText("Nutrition Info:\nNetwork error.");
+                        nutritionInfo.setText("Network error.");
                         Log.e("NETWORK_ERROR", t.getMessage());
                     }
                 });

@@ -12,4 +12,6 @@
     <color name="logobg">#e6ded3</color>
     <color name="contrast">#d3dbe6</color>
     <color name="complimentary">#ccb492</color>
+    <color name="brown">#873e23</color>
+    <color name="donut">#937853</color>
 </resources>
