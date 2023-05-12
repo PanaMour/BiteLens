@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private Button selectImageButton;
+    private Button searchButton;
+    private EditText searchBar;
     private ImageView foodImage;
     private TextView nutritionInfo;
     private LinearLayout loadingIndicator;
@@ -91,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize UI components
         selectImageButton = findViewById(R.id.select_image_button);
+        searchButton = findViewById(R.id.search_button);
+        searchBar = findViewById(R.id.search_field);
         foodImage = findViewById(R.id.food_image);
         nutritionInfo = findViewById(R.id.nutinfo);
         loadingIndicator = findViewById(R.id.loading_layout);
@@ -100,6 +105,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 selectImage();
+            }
+        });
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("SSSSSSSSSSSSSSSSSSSSSSSSSSS" + searchBar.getText().toString());
+                search(searchBar.getText().toString());
             }
         });
 
@@ -200,6 +213,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    public void search(String food){
+        List<FoodConfidence> foodConfidences = new ArrayList<>();
+        if (isFoodRelated(food)) {
+            foodConfidences.add(new FoodConfidence(food, 1));
+            fetchNutritionInfo(foodConfidences);
+        }else if(food.equals("")){
+            nutritionInfo.setText("Please input a food in the search bar.");
+        }
+        else{
+            nutritionInfo.setText("Error recognizing food.");
+        }
     }
 
     // Processes the selected image and recognizes food using the ML Kit Image Labeling library
