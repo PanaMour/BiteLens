@@ -1,5 +1,7 @@
 package com.example.bitelens;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -23,6 +25,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +39,8 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
@@ -63,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private Button selectImageButton;
     private Button searchButton;
+    private Button addMealButton;
     private EditText searchBar;
     private ImageView foodImage;
     private TextView nutritionInfo;
@@ -111,12 +117,68 @@ public class MainActivity extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("SSSSSSSSSSSSSSSSSSSSSSSSSSS" + searchBar.getText().toString());
                 search(searchBar.getText().toString());
             }
         });
 
         db = FirebaseFirestore.getInstance();
+
+        Button addMealButton = findViewById(R.id.add_meal_button);
+        addMealButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // This is assuming you have the food name and calories stored in variables
+                String foodName = "food";  // replace with actual food name
+                int calories = 100;  // replace with actual calories
+                Map<String, Object> meal = new HashMap<>();
+                meal.put("foodName", foodName);
+                meal.put("calories", calories);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                LayoutInflater inflater = getLayoutInflater();
+                View dialogView = inflater.inflate(R.layout.dialog_add_meal, null);
+                builder.setView(dialogView);
+
+                TextView foodNameTextView = dialogView.findViewById(R.id.food_name_textview);
+                TextView caloriesTextView = dialogView.findViewById(R.id.calories_textview);
+                foodNameTextView.setText("Food: " + foodName);
+                caloriesTextView.setText("Calories: " + calories);
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User confirmed the dialog
+                                // Replace uid with the actual user id
+                                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                db.collection("users").document(uid).collection("meals")
+                                        .add(meal)
+                                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                            @Override
+                                            public void onSuccess(DocumentReference documentReference) {
+                                                Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(MainActivity.this, "Failed to add meal data to Firestore.", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                                // Nothing happens
+                            }
+                        });
+                // Create the AlertDialog object and return it
+                builder.create().show();
+            }
+        });
+
+
+
+
     }
     private void setupDrawerContent(NavigationView navigationView) {
             navigationView.setNavigationItemSelectedListener(menuItem -> {

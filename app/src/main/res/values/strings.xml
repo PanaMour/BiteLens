@@ -10,4 +10,5 @@
     <string name="statistics">Statistics</string>
     <string name="logout">Logout</string>
     <string name="search">Search</string>
+    <string name="are_you_sure_you_want_to_add_this_meal">Are you sure you want to add this meal?</string>
 </resources>
