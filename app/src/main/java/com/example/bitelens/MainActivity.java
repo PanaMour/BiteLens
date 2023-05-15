@@ -21,6 +21,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -51,10 +53,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import api.ApiHelper;
@@ -127,12 +132,35 @@ public class MainActivity extends AppCompatActivity {
         addMealButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // This is assuming you have the food name and calories stored in variables
-                String foodName = "food";  // replace with actual food name
-                int calories = 100;  // replace with actual calories
+                String foodName = "";  // replace with actual food name
+                String calories = "";  // replace with actual calories
+                String[] nutritionalInfoLines = nutritionInfo.getText().toString().split("\n");
+
+                // Create a HashMap to store the meal data
                 Map<String, Object> meal = new HashMap<>();
-                meal.put("foodName", foodName);
-                meal.put("calories", calories);
+
+                // Parse each line and store the data in the HashMap
+                for (String line : nutritionalInfoLines) {
+                    String[] parts = line.split(": ");
+                    if (parts.length == 2) {
+                        String key = parts[0].trim();
+                        String value = parts[1].trim();
+                        if (key.equals("Calories") || key.contains("fat") || key.contains("Cholesterol") || key.contains("Sodium")
+                                || key.contains("carbohydrate") || key.contains("fiber") || key.contains("Sugars") || key.contains("Protein")) {
+                            // Remove the units from the value (g, mg, etc.)
+                            value = value.replaceAll("[^\\d.]", "").trim();
+                            if(key.equals("Calories")){
+                                calories = value;
+                            }
+                            meal.put(key, Double.parseDouble(value));
+                        } else {
+                            if(key.contains("name")){
+                                foodName = value;
+                            }
+                            meal.put(key, value);
+                        }
+                    }
+                }
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 LayoutInflater inflater = getLayoutInflater();
@@ -141,8 +169,15 @@ public class MainActivity extends AppCompatActivity {
 
                 TextView foodNameTextView = dialogView.findViewById(R.id.food_name_textview);
                 TextView caloriesTextView = dialogView.findViewById(R.id.calories_textview);
+                TextView dateTextView = dialogView.findViewById(R.id.date);
                 foodNameTextView.setText("Food: " + foodName);
                 caloriesTextView.setText("Calories: " + calories);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+                dateTextView.setText("Date: " + dateFormat.format(Calendar.getInstance().getTime()));
+
+                // Add the current date as a Timestamp
+                meal.put("Date", com.google.firebase.Timestamp.now());
 
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -175,9 +210,6 @@ public class MainActivity extends AppCompatActivity {
                 builder.create().show();
             }
         });
-
-
-
 
     }
     private void setupDrawerContent(NavigationView navigationView) {
@@ -280,6 +312,9 @@ public class MainActivity extends AppCompatActivity {
     public void search(String food){
         List<FoodConfidence> foodConfidences = new ArrayList<>();
         if (isFoodRelated(food)) {
+            Drawable drawable = getResources().getDrawable(R.drawable.bitelenslogotransparent);
+            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+            foodImage.setImageBitmap(bitmap);
             foodConfidences.add(new FoodConfidence(food, 1));
             fetchNutritionInfo(foodConfidences);
         }else if(food.equals("")){
@@ -375,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
                 "rice", "salad", "sandwich", "soup", "seafood", "fish", "poultry",
                 "cake", "cookie", "pastry", "chocolate", "ice cream", "sauce", "fast food",
                 "coffee", "tea", "wine", "beer", "cocktail", "juice", "smoothie","icing",
-                "tomato", "cupcake", "banana"
+                "tomato", "cupcake", "banana", "burger"
         };
 
         // Convert the label to lowercase for comparison
