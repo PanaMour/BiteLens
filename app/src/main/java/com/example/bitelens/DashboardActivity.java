@@ -99,7 +99,7 @@ public class DashboardActivity extends AppCompatActivity {
                             String progressString = String.format("%.0f%%", progress);
                             progressPercentage.setText(progressString);
                             progressBar.setProgress(progress);
-                            progressText.setText(consumed + " / " + goal);
+                            progressText.setText((int)consumed + " / " + goal);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -211,7 +211,6 @@ public class DashboardActivity extends AppCompatActivity {
                                 progressPercentage.setText(progressString);
                                 progressBar.setProgress(progress);
                                 progressText.setText(((int) consumed) + " / " + goal);
-                                System.out.println("CALORIES: " + consumed);
                                 caloriesConsumed.setText(String.valueOf(totalCalories));
                             } else {
                                 Log.d(TAG, "Error getting documents: ", task.getException());
@@ -263,7 +262,7 @@ public class DashboardActivity extends AppCompatActivity {
         String progressString = String.format("%.0f%%", progress);
         progressPercentage.setText(progressString);
         progressBar.setProgress(progress);
-        progressText.setText(consumed + " / " + goal);
+        progressText.setText((int)consumed + " / " + goal);
 
         // Assuming you have the user's UID, for example, from FirebaseAuth
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
