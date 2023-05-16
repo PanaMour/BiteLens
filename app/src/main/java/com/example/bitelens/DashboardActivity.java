@@ -1,5 +1,7 @@
 package com.example.bitelens;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -15,6 +17,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,14 +27,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -42,7 +55,7 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView progressPercentage;
     private TextView caloriesGoal;
     private TextView caloriesConsumed;
-    private int consumed;
+    private float consumed = 0;
     private int goal;
     CustomCircularProgressBar progressBar;
     TextView progressText;
@@ -71,17 +84,17 @@ public class DashboardActivity extends AppCompatActivity {
                             }
 
                             // Fetch calories_consumed and calories_goal from the database
-                            Integer consumedFromDatabase = documentSnapshot.getLong("calories_consumed").intValue();
+                            //Integer consumedFromDatabase = documentSnapshot.getLong("calories_consumed").intValue();
                             Integer goalFromDatabase = documentSnapshot.getLong("calories_goal").intValue();
 
                             // Update the UI with fetched values
-                            caloriesConsumed.setText(String.valueOf(consumedFromDatabase));
+                            //caloriesConsumed.setText(String.valueOf(consumedFromDatabase));
                             caloriesGoal.setText(String.valueOf(goalFromDatabase));
 
                             // Update progress and text values
-                            consumed = consumedFromDatabase;
+                            //consumed = consumedFromDatabase;
                             goal = goalFromDatabase;
-
+                            calculateTotalCaloriesForToday();
                             float progress = (float) consumed / goal * 100;
                             String progressString = String.format("%.0f%%", progress);
                             progressPercentage.setText(progressString);
@@ -131,14 +144,85 @@ public class DashboardActivity extends AppCompatActivity {
         consumed = Integer.parseInt(consumedStr);
         goal = Integer.parseInt(goalStr);
 
-        float progress = (float) consumed / goal * 100;
-        String progressString = String.format("%.0f%%", progress);
-        progressPercentage.setText(progressString);
-        progressBar.setProgress(progress);
-        progressText.setText(consumedStr + " / " + goalStr);
+        calculateTotalCaloriesForToday();
+
 
 
     }
+    public com.google.firebase.Timestamp getCurrentDayTimestamp() {
+        // Get the current date
+        Calendar calendar = Calendar.getInstance();
+        // Set the time to 00:00:00
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date date = calendar.getTime();
+        // Create a timestamp from the Date object
+        return new com.google.firebase.Timestamp(date);
+    }
+    public com.google.firebase.Timestamp getStartOfDayTimestamp(com.google.firebase.Timestamp timestamp) {
+        // Convert the timestamp to Date
+        Date date = timestamp.toDate();
+        // Create a Calendar instance and set the time to the given date
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        // Set the time to 00:00:00
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        // Convert it back to a Date
+        date = calendar.getTime();
+        // Create a new Timestamp from the Date object
+        return new com.google.firebase.Timestamp(date);
+    }
+    public void calculateTotalCaloriesForToday() {
+        com.google.firebase.Timestamp currentDayTimestamp = getCurrentDayTimestamp();
+        if (currentDayTimestamp != null) {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            firebaseFirestore.collection("users").document(uid).collection("meals")
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                int totalCalories = 0;
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    // Get the Date of the meal as a Timestamp
+                                    com.google.firebase.Timestamp mealDateTimestamp = document.getTimestamp("Date");
+                                    if (mealDateTimestamp != null) {
+                                        // Convert it to the start of the day
+                                        com.google.firebase.Timestamp mealDateStartOfDayTimestamp = getStartOfDayTimestamp(mealDateTimestamp);
+                                        // Compare only the date parts
+                                        if (mealDateStartOfDayTimestamp.equals(currentDayTimestamp)) {
+                                            // Assuming the calories are stored as a double
+                                            Double mealCalories = document.getDouble("Calories");
+                                            if (mealCalories != null) {
+                                                totalCalories += mealCalories;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Update the UI with the total calories
+                                consumed = totalCalories;
+                                float progress = (float) consumed / goal * 100;
+                                String progressString = String.format("%.0f%%", progress);
+                                progressPercentage.setText(progressString);
+                                progressBar.setProgress(progress);
+                                progressText.setText(((int) consumed) + " / " + goal);
+                                System.out.println("CALORIES: " + consumed);
+                                caloriesConsumed.setText(String.valueOf(totalCalories));
+                            } else {
+                                Log.d(TAG, "Error getting documents: ", task.getException());
+                            }
+                        }
+                    });
+        }
+    }
+
+
+
     private void showSetNewGoalDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(DashboardActivity.this);
         LayoutInflater inflater = getLayoutInflater();
