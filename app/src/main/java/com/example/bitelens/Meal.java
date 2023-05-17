@@ -12,13 +12,13 @@ public class Meal {
     private Double fiber;
     private Double sugars;
     private Double protein;
-    private Date date;
+    private String date;
 
     public Meal() {
 
     }
 
-    public Meal(String name, Double calories, Double fat, Double cholesterol, Double sodium, Double carbohydrate, Double fiber, Double sugars, Double protein, Date date) {
+    public Meal(String name, Double calories, Double fat, Double cholesterol, Double sodium, Double carbohydrate, Double fiber, Double sugars, Double protein, String date) {
         this.name = name;
         this.calories = calories;
         this.fat = fat;
@@ -104,11 +104,11 @@ public class Meal {
         this.sugars = sugars;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 }

@@ -77,8 +77,9 @@ public class HistoryActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             List<Meal> meals = new ArrayList<>();
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                Meal meal = document.toObject(Meal.class);
+                                Meal meal = new Meal(document.get("Food name").toString(), ((Double) document.get("Calories")),(Double)document.get("Total fat"),(Double)document.get("Cholesterol"),(Double)document.get("Sodium"),(Double)document.get("Total carbohydrate"),(Double)document.get("Dietary fiber"),(Double)document.get("Sugars"),(Double)document.get("Protein"),document.get("Date").toString());
                                 meals.add(meal);
+                                System.out.println(document.get("Date").toString());
                             }
                             mealAdapter = new MealAdapter(meals);
                             mealsRecyclerView.setAdapter(mealAdapter);

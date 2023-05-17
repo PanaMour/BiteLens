@@ -8,7 +8,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder> {
 
@@ -30,7 +35,22 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         Meal meal = mealList.get(position);
         holder.mealName.setText(meal.getName());
         holder.mealCalories.setText(String.valueOf(meal.getCalories()));
-        holder.mealDate.setText(meal.getDate().toString());  // You may want to format this date
+
+        String timestampString = meal.getDate();  // "Timestamp(seconds=1684235164, nanoseconds=17000000)"
+
+        Pattern pattern = Pattern.compile("Timestamp\\(seconds=(\\d+), nanoseconds=(\\d+)\\)");
+        Matcher matcher = pattern.matcher(timestampString);
+        if (matcher.find()) {
+            long seconds = Long.parseLong(matcher.group(1));
+            Date date = new Date(seconds * 1000); // Convert seconds to milliseconds
+
+            // Format the Date
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy h:mm a", Locale.getDefault());
+            String formattedDate = dateFormat.format(date);
+
+            holder.mealDate.setText(formattedDate);
+        }
+
     }
 
     @Override
