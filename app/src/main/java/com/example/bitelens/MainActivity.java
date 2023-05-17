@@ -38,6 +38,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -307,11 +308,8 @@ public class MainActivity extends AppCompatActivity {
     public void search(String food){
         List<FoodConfidence> foodConfidences = new ArrayList<>();
         if (isFoodRelated(food)) {
-            Drawable drawable = getResources().getDrawable(R.drawable.bitelenslogotransparent);
-            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-            foodImage.setImageBitmap(bitmap);
             foodConfidences.add(new FoodConfidence(food, 1));
-            fetchNutritionInfo(foodConfidences);
+            searchNutritionInfo(foodConfidences);
         }else if(food.equals("")){
             nutritionInfo.setText("Please input a food in the search bar.");
         }
@@ -450,6 +448,66 @@ public class MainActivity extends AppCompatActivity {
                                     loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText(currentFood.getFormattedNutritionInfo()
                                             + "\n\nConfidence: " + String.format("%.2f", confidence * 100) + "%");
+                                } else {
+                                    loadingIndicator.setVisibility(View.GONE);
+                                    nutritionInfo.setText("No data found.");
+                                }
+                            } else {
+                                loadingIndicator.setVisibility(View.GONE);
+                                nutritionInfo.setText("No data found.");
+                            }
+                        } else {
+                            loadingIndicator.setVisibility(View.GONE);
+                            // Handle API errors
+                            Log.e("API_ERROR", "Status code: " + response.code() + ", Message: " + response.message());
+                            try {
+                                Log.e("API_ERROR", "Error response: " + response.errorBody().string());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<NutritionResponse> call, Throwable t) {
+                        // Handle network errors
+                        loadingIndicator.setVisibility(View.GONE);
+                        nutritionInfo.setText("Network error.");
+                        Log.e("NETWORK_ERROR", t.getMessage());
+                    }
+                });
+    }
+    private void searchNutritionInfo(List<FoodConfidence> foodConfidences) {
+        if (foodConfidences == null || foodConfidences.isEmpty()) {
+            nutritionInfo.setText("No data found.");
+            return;
+        }
+
+        // Sort the foodConfidences list in descending order of confidence
+        Collections.sort(foodConfidences, (o1, o2) -> Float.compare(o2.getConfidence(), o1.getConfidence()));
+
+        FoodConfidence highestConfidenceFood = foodConfidences.get(0);
+        String foodName = highestConfidenceFood.getName();
+        float confidence = highestConfidenceFood.getConfidence();
+
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("query", foodName);
+
+        ApiHelper.getInstance().getNutritionixApi().getNutritionInfo(requestBody)
+                .enqueue(new Callback<NutritionResponse>() {
+                    @Override
+                    public void onResponse(Call<NutritionResponse> call, Response<NutritionResponse> response) {
+                        if (response.isSuccessful()) {
+                            NutritionResponse nutritionResponse = response.body();
+                            if (nutritionResponse != null) {
+                                NutritionResponse.Food currentFood = nutritionResponse.getFood(0);
+                                if (currentFood != null) {
+                                    // Update the UI with the nutritional information and confidence value
+                                    loadingIndicator.setVisibility(View.GONE);
+                                    nutritionInfo.setText(currentFood.getFormattedNutritionInfo());
+                                    Glide.with(MainActivity.this)
+                                            .load(currentFood.getPhoto().getThumb())
+                                            .into(foodImage);
                                 } else {
                                     loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText("No data found.");

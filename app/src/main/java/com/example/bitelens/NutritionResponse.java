@@ -67,6 +67,9 @@ public class NutritionResponse {
         @SerializedName("nf_protein")
         private double protein;
 
+        @SerializedName("photo")
+        private Photo photo;
+
         public String getFoodName() {
             return foodName;
         }
@@ -128,6 +131,14 @@ public class NutritionResponse {
                     "Dietary fiber: " + dietaryFiber + "g" + "\n" +
                     "Sugars: " + sugars + "g" + "\n" +
                     "Protein: " + protein + "g";
+        }
+
+        public Photo getPhoto() {
+            return photo;
+        }
+
+        public void setPhoto(Photo photo) {
+            this.photo = photo;
         }
     }
 }
