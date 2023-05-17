@@ -297,7 +297,7 @@ public class DashboardActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.nav_history:
-                Intent nav_history = new Intent(DashboardActivity.this, MainActivity.class);
+                Intent nav_history = new Intent(DashboardActivity.this, HistoryActivity.class);
                 startActivity(nav_history);
                 finish();
                 break;

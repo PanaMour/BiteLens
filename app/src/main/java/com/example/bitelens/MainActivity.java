@@ -226,13 +226,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(dashboardIntent);
                 finish();
                 break;
-            case R.id.nav_mealplanning:
-                Intent mealplanningIntent = new Intent(MainActivity.this, LoginActivity.class);
-                startActivity(mealplanningIntent);
-                finish();
-                break;
             case R.id.nav_history:
-                Intent nav_history = new Intent(MainActivity.this, LoginActivity.class);
+                Intent nav_history = new Intent(MainActivity.this, HistoryActivity.class);
                 startActivity(nav_history);
                 finish();
                 break;

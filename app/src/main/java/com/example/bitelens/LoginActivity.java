@@ -107,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.nav_history:
-                Intent nav_history = new Intent(LoginActivity.this, LoginActivity.class);
+                Intent nav_history = new Intent(LoginActivity.this, HistoryActivity.class);
                 startActivity(nav_history);
                 finish();
                 break;
