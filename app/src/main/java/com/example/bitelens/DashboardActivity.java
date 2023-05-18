@@ -308,7 +308,10 @@ public class DashboardActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.nav_logout:
-                //
+                Intent nav_logout = new Intent(DashboardActivity.this, LoginActivity.class);
+                startActivity(nav_logout);
+                FirebaseAuth.getInstance().signOut();
+                finish();
                 break;
         }
         drawerLayout.closeDrawers();

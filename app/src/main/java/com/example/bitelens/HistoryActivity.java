@@ -116,7 +116,10 @@ public class HistoryActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.nav_logout:
-                //
+                Intent nav_logout = new Intent(HistoryActivity.this, LoginActivity.class);
+                startActivity(nav_logout);
+                FirebaseAuth.getInstance().signOut();
+                finish();
                 break;
         }
         drawerLayout.closeDrawers();
