@@ -21,9 +21,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -45,6 +47,8 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
@@ -53,11 +57,17 @@ import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -80,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView nutritionInfo;
     private LinearLayout loadingIndicator;
     private FirebaseFirestore db;
+    private Uri foodImageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,19 +197,48 @@ public class MainActivity extends AppCompatActivity {
                                 // User confirmed the dialog
                                 // Replace uid with the actual user id
                                 String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                                db.collection("users").document(uid).collection("meals")
-                                        .add(meal)
-                                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                            @Override
-                                            public void onSuccess(DocumentReference documentReference) {
-                                                Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
-                                            }
+
+                                // Create a reference to the storage bucket
+                                StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+
+                                // Create a timestamp for the file name
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault());
+                                String fileName = sdf.format(new Date());
+
+                                // Create a reference to the file location
+                                StorageReference fileRef = storageRef.child(fileName);
+
+                                // Upload the file
+                                fileRef.putFile(foodImageUri)
+                                        .addOnSuccessListener(taskSnapshot -> {
+                                            // Get the download URL of the uploaded file
+                                            fileRef.getDownloadUrl()
+                                                    .addOnSuccessListener(uri -> {
+                                                        // Add the URL to the meal data
+                                                        meal.put("ImageURL", fileName);
+
+                                                        // Add the meal data to Firestore
+                                                        db.collection("users").document(uid).collection("meals")
+                                                                .add(meal)
+                                                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                                    @Override
+                                                                    public void onSuccess(DocumentReference documentReference) {
+                                                                        Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                })
+                                                                .addOnFailureListener(new OnFailureListener() {
+                                                                    @Override
+                                                                    public void onFailure(@NonNull Exception e) {
+                                                                        Toast.makeText(MainActivity.this, "Failed to add meal data to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                    })
+                                                    .addOnFailureListener(e -> {
+                                                        // Handle any errors
+                                                    });
                                         })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Toast.makeText(MainActivity.this, "Failed to add meal data to Firestore.", Toast.LENGTH_SHORT).show();
-                                            }
+                                        .addOnFailureListener(e -> {
+                                            // Handle any errors
                                         });
                             }
                         })
@@ -208,12 +248,42 @@ public class MainActivity extends AppCompatActivity {
                                 // Nothing happens
                             }
                         });
+
                 // Create the AlertDialog object and return it
                 builder.create().show();
             }
+
         });
 
     }
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap bmp = null;
+            try {
+                InputStream in = new URL(urldisplay).openStream();
+                bmp = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return bmp;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            // Save the bitmap to the cache directory
+            File file = new File(getCacheDir(), "image.png");
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                result.compress(Bitmap.CompressFormat.PNG, 100, out);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Create a Uri from the file path
+            foodImageUri = Uri.fromFile(file);
+        }
+    }
+
     private void setupDrawerContent(NavigationView navigationView) {
             navigationView.setNavigationItemSelectedListener(menuItem -> {
                 selectDrawerItem(menuItem);
@@ -329,6 +399,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (requestCode == SELECT_IMAGE_REQUEST_CODE) {
                 Uri selectedImage = data.getData();
+                foodImageUri = selectedImage;
                 try {
                     bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
                 } catch (IOException e) {
@@ -509,6 +580,8 @@ public class MainActivity extends AppCompatActivity {
                                     Glide.with(MainActivity.this)
                                             .load(currentFood.getPhoto().getThumb())
                                             .into(foodImage);
+                                    new DownloadImageTask().execute(currentFood.getPhoto().getThumb());
+
                                 } else {
                                     loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText("No data found.");

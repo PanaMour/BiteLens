@@ -8,30 +8,46 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/meal_name"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Meal Name"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/meal_calories"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Meal Calories" />
+            <TextView
+                android:id="@+id/meal_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meal Name"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/meal_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Meal Date" />
+            <TextView
+                android:id="@+id/meal_calories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meal Calories" />
 
+            <TextView
+                android:id="@+id/meal_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meal Date" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/meal_photo"
+            android:layout_width="100dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/bitelenslogotransparent" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
