@@ -303,7 +303,7 @@ public class DashboardActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.nav_statistics:
-                Intent nav_statistics = new Intent(DashboardActivity.this, LoginActivity.class);
+                Intent nav_statistics = new Intent(DashboardActivity.this, StatisticsActivity.class);
                 startActivity(nav_statistics);
                 finish();
                 break;

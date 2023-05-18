@@ -111,7 +111,7 @@ public class HistoryActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.nav_statistics:
-                Intent nav_statistics = new Intent(HistoryActivity.this, LoginActivity.class);
+                Intent nav_statistics = new Intent(HistoryActivity.this, StatisticsActivity.class);
                 startActivity(nav_statistics);
                 finish();
                 break;
