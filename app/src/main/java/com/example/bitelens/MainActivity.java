@@ -16,6 +16,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -91,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout loadingIndicator;
     private FirebaseFirestore db;
     private Uri foodImageUri;
+    private boolean addedMeal = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,112 +147,116 @@ public class MainActivity extends AppCompatActivity {
         addMealButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String foodName = "";  // replace with actual food name
-                String calories = "";  // replace with actual calories
-                String[] nutritionalInfoLines = nutritionInfo.getText().toString().split("\n");
+                if(addedMeal) {
+                    String foodName = "";  // replace with actual food name
+                    String calories = "";  // replace with actual calories
+                    String[] nutritionalInfoLines = nutritionInfo.getText().toString().split("\n");
 
-                // Create a HashMap to store the meal data
-                Map<String, Object> meal = new HashMap<>();
+                    // Create a HashMap to store the meal data
+                    Map<String, Object> meal = new HashMap<>();
 
-                // Parse each line and store the data in the HashMap
-                for (String line : nutritionalInfoLines) {
-                    String[] parts = line.split(": ");
-                    if (parts.length == 2) {
-                        String key = parts[0].trim();
-                        String value = parts[1].trim();
-                        if (key.equals("Calories") || key.contains("fat") || key.contains("Cholesterol") || key.contains("Sodium")
-                                || key.contains("carbohydrate") || key.contains("fiber") || key.contains("Sugars") || key.contains("Protein")) {
-                            // Remove the units from the value (g, mg, etc.)
-                            value = value.replaceAll("[^\\d.]", "").trim();
-                            if(key.equals("Calories")){
-                                calories = value;
+                    // Parse each line and store the data in the HashMap
+                    for (String line : nutritionalInfoLines) {
+                        String[] parts = line.split(": ");
+                        if (parts.length == 2) {
+                            String key = parts[0].trim();
+                            String value = parts[1].trim();
+                            if (key.equals("Calories") || key.contains("fat") || key.contains("Cholesterol") || key.contains("Sodium")
+                                    || key.contains("carbohydrate") || key.contains("fiber") || key.contains("Sugars") || key.contains("Protein")) {
+                                // Remove the units from the value (g, mg, etc.)
+                                value = value.replaceAll("[^\\d.]", "").trim();
+                                if (key.equals("Calories")) {
+                                    calories = value;
+                                }
+                                meal.put(key, Double.parseDouble(value));
+                            } else {
+                                if (key.contains("name")) {
+                                    foodName = value;
+                                }
+                                meal.put(key, value);
                             }
-                            meal.put(key, Double.parseDouble(value));
-                        } else {
-                            if(key.contains("name")){
-                                foodName = value;
-                            }
-                            meal.put(key, value);
                         }
                     }
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    LayoutInflater inflater = getLayoutInflater();
+                    View dialogView = inflater.inflate(R.layout.dialog_add_meal, null);
+                    builder.setView(dialogView);
+
+                    TextView foodNameTextView = dialogView.findViewById(R.id.food_name_textview);
+                    TextView caloriesTextView = dialogView.findViewById(R.id.calories_textview);
+                    TextView dateTextView = dialogView.findViewById(R.id.date);
+                    foodNameTextView.setText("Food: " + foodName);
+                    caloriesTextView.setText("Calories: " + calories);
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+                    dateTextView.setText("Date: " + dateFormat.format(Calendar.getInstance().getTime()));
+
+                    // Add the current date as a Timestamp
+                    meal.put("Date", com.google.firebase.Timestamp.now());
+
+                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User confirmed the dialog
+                                    // Replace uid with the actual user id
+                                    String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                                    // Create a reference to the storage bucket
+                                    StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+
+                                    // Create a timestamp for the file name
+                                    SimpleDateFormat sdf = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault());
+                                    String fileName = sdf.format(new Date());
+
+                                    // Create a reference to the file location
+                                    StorageReference fileRef = storageRef.child(fileName);
+
+                                    // Upload the file
+                                    fileRef.putFile(foodImageUri)
+                                            .addOnSuccessListener(taskSnapshot -> {
+                                                // Get the download URL of the uploaded file
+                                                fileRef.getDownloadUrl()
+                                                        .addOnSuccessListener(uri -> {
+                                                            // Add the URL to the meal data
+                                                            meal.put("ImageURL", fileName);
+
+                                                            // Add the meal data to Firestore
+                                                            db.collection("users").document(uid).collection("meals")
+                                                                    .add(meal)
+                                                                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                                        @Override
+                                                                        public void onSuccess(DocumentReference documentReference) {
+                                                                            Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    })
+                                                                    .addOnFailureListener(new OnFailureListener() {
+                                                                        @Override
+                                                                        public void onFailure(@NonNull Exception e) {
+                                                                            Toast.makeText(MainActivity.this, "Failed to add meal data to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    });
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            // Handle any errors
+                                                        });
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                // Handle any errors
+                                            });
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User cancelled the dialog
+                                    // Nothing happens
+                                }
+                            });
+
+                    // Create the AlertDialog object and return it
+                    builder.create().show();
+                }else{
+                    Toast.makeText(MainActivity.this, "No meal information in activity.", Toast.LENGTH_SHORT).show();
                 }
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                LayoutInflater inflater = getLayoutInflater();
-                View dialogView = inflater.inflate(R.layout.dialog_add_meal, null);
-                builder.setView(dialogView);
-
-                TextView foodNameTextView = dialogView.findViewById(R.id.food_name_textview);
-                TextView caloriesTextView = dialogView.findViewById(R.id.calories_textview);
-                TextView dateTextView = dialogView.findViewById(R.id.date);
-                foodNameTextView.setText("Food: " + foodName);
-                caloriesTextView.setText("Calories: " + calories);
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-
-                dateTextView.setText("Date: " + dateFormat.format(Calendar.getInstance().getTime()));
-
-                // Add the current date as a Timestamp
-                meal.put("Date", com.google.firebase.Timestamp.now());
-
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User confirmed the dialog
-                                // Replace uid with the actual user id
-                                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                                // Create a reference to the storage bucket
-                                StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-
-                                // Create a timestamp for the file name
-                                SimpleDateFormat sdf = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault());
-                                String fileName = sdf.format(new Date());
-
-                                // Create a reference to the file location
-                                StorageReference fileRef = storageRef.child(fileName);
-
-                                // Upload the file
-                                fileRef.putFile(foodImageUri)
-                                        .addOnSuccessListener(taskSnapshot -> {
-                                            // Get the download URL of the uploaded file
-                                            fileRef.getDownloadUrl()
-                                                    .addOnSuccessListener(uri -> {
-                                                        // Add the URL to the meal data
-                                                        meal.put("ImageURL", fileName);
-
-                                                        // Add the meal data to Firestore
-                                                        db.collection("users").document(uid).collection("meals")
-                                                                .add(meal)
-                                                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                                                    @Override
-                                                                    public void onSuccess(DocumentReference documentReference) {
-                                                                        Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
-                                                                    }
-                                                                })
-                                                                .addOnFailureListener(new OnFailureListener() {
-                                                                    @Override
-                                                                    public void onFailure(@NonNull Exception e) {
-                                                                        Toast.makeText(MainActivity.this, "Failed to add meal data to Firestore.", Toast.LENGTH_SHORT).show();
-                                                                    }
-                                                                });
-                                                    })
-                                                    .addOnFailureListener(e -> {
-                                                        // Handle any errors
-                                                    });
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            // Handle any errors
-                                        });
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User cancelled the dialog
-                                // Nothing happens
-                            }
-                        });
-
-                // Create the AlertDialog object and return it
-                builder.create().show();
             }
 
         });
@@ -270,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
             return bmp;
         }
 
+        @SuppressLint("WrongThread")
         protected void onPostExecute(Bitmap result) {
             // Save the bitmap to the cache directory
             File file = new File(getCacheDir(), "image.png");
@@ -383,9 +390,11 @@ public class MainActivity extends AppCompatActivity {
             searchNutritionInfo(foodConfidences);
         }else if(food.equals("")){
             nutritionInfo.setText("Please input a food in the search bar.");
+            addedMeal = false;
         }
         else{
             nutritionInfo.setText("Error recognizing food.");
+            addedMeal = false;
         }
     }
 
@@ -449,6 +458,7 @@ public class MainActivity extends AppCompatActivity {
                         if (foodConfidences.isEmpty()) {
                             loadingIndicator.setVisibility(View.GONE);
                             nutritionInfo.setText("No food recognized.");
+                            addedMeal = false;
                             return;
                         }
 
@@ -462,6 +472,7 @@ public class MainActivity extends AppCompatActivity {
                         loadingIndicator.setVisibility(View.GONE);
                         // Handle any errors in the labeling process
                         nutritionInfo.setText("Error recognizing food.");
+                        addedMeal = false;
                         Log.e("RECOGNITION_ERROR", e.getMessage());
                     }
                 });
@@ -494,6 +505,7 @@ public class MainActivity extends AppCompatActivity {
     private void fetchNutritionInfo(List<FoodConfidence> foodConfidences) {
         if (foodConfidences == null || foodConfidences.isEmpty()) {
             nutritionInfo.setText("No data found.");
+            addedMeal = false;
             return;
         }
 
@@ -520,16 +532,20 @@ public class MainActivity extends AppCompatActivity {
                                     loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText(currentFood.getFormattedNutritionInfo()
                                             + "\n\nConfidence: " + String.format("%.2f", confidence * 100) + "%");
+                                    addedMeal = true;
                                 } else {
                                     loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText("No data found.");
+                                    addedMeal = false;
                                 }
                             } else {
                                 loadingIndicator.setVisibility(View.GONE);
                                 nutritionInfo.setText("No data found.");
+                                addedMeal = false;
                             }
                         } else {
                             loadingIndicator.setVisibility(View.GONE);
+                            addedMeal = false;
                             // Handle API errors
                             Log.e("API_ERROR", "Status code: " + response.code() + ", Message: " + response.message());
                             try {
@@ -545,6 +561,7 @@ public class MainActivity extends AppCompatActivity {
                         // Handle network errors
                         loadingIndicator.setVisibility(View.GONE);
                         nutritionInfo.setText("Network error.");
+                        addedMeal = false;
                         Log.e("NETWORK_ERROR", t.getMessage());
                     }
                 });
@@ -552,6 +569,7 @@ public class MainActivity extends AppCompatActivity {
     private void searchNutritionInfo(List<FoodConfidence> foodConfidences) {
         if (foodConfidences == null || foodConfidences.isEmpty()) {
             nutritionInfo.setText("No data found.");
+            addedMeal = false;
             return;
         }
 
@@ -577,6 +595,7 @@ public class MainActivity extends AppCompatActivity {
                                     // Update the UI with the nutritional information and confidence value
                                     loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText(currentFood.getFormattedNutritionInfo());
+                                    addedMeal = true;
                                     Glide.with(MainActivity.this)
                                             .load(currentFood.getPhoto().getThumb())
                                             .into(foodImage);
@@ -585,13 +604,16 @@ public class MainActivity extends AppCompatActivity {
                                 } else {
                                     loadingIndicator.setVisibility(View.GONE);
                                     nutritionInfo.setText("No data found.");
+                                    addedMeal = false;
                                 }
                             } else {
                                 loadingIndicator.setVisibility(View.GONE);
                                 nutritionInfo.setText("No data found.");
+                                addedMeal = false;
                             }
                         } else {
                             loadingIndicator.setVisibility(View.GONE);
+                            addedMeal = false;
                             // Handle API errors
                             Log.e("API_ERROR", "Status code: " + response.code() + ", Message: " + response.message());
                             try {
@@ -607,6 +629,7 @@ public class MainActivity extends AppCompatActivity {
                         // Handle network errors
                         loadingIndicator.setVisibility(View.GONE);
                         nutritionInfo.setText("Network error.");
+                        addedMeal = false;
                         Log.e("NETWORK_ERROR", t.getMessage());
                     }
                 });
