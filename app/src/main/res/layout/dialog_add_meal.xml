@@ -37,4 +37,13 @@
         android:background="@color/contrast"
         android:padding="8dp"
         android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/location_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:background="@color/contrast"
+        android:padding="8dp"
+        android:layout_marginTop="8dp" />
 </LinearLayout>
