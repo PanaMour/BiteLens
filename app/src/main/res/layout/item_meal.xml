@@ -38,6 +38,12 @@
                 android:layout_height="wrap_content"
                 android:text="Meal Date" />
 
+            <TextView
+                android:id="@+id/meal_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meal Location" />
+
         </LinearLayout>
 
         <ImageView

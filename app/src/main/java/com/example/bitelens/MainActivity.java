@@ -522,10 +522,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         // A list of common food-related keywords
         String[] foodKeywords = {
-                "fruit", "vegetable", "meat", "drink", "beverage", "snack",
-                "bread", "cereal", "cheese", "sweets", "dessert", "pizza", "pasta",
-                "rice", "salad", "sandwich", "soup", "seafood", "fish", "poultry",
-                "cake", "cookie", "pastry", "chocolate", "ice cream", "sauce", "fast food",
+                "fruit", "vegetable", "meat",
+                "bread", "cereal", "cheese", "pizza", "pasta",
+                "rice", "salad", "sandwich", "soup", "seafood", "fish",
+                "cake", "cookie", "pastry", "chocolate", "ice cream", "sauce",
                 "coffee", "tea", "wine", "beer", "cocktail", "juice", "smoothie","icing",
                 "tomato", "cupcake", "banana", "burger"
         };
@@ -630,6 +630,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             } else {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);
             }
+        }else {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location loc) {
+                    // Update the location variable every time the device's location changes
+                    location = loc.getLatitude() + "," + loc.getLongitude();
+                }
+            });
         }
     }
     //Asks user for Location Permission

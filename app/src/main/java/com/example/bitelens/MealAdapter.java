@@ -78,6 +78,7 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
                 // Handle any errors
             }
         });
+        holder.mealLocation.setText("Location: "+meal.getLocation());
     }
 
     @Override
@@ -90,6 +91,7 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         public TextView mealCalories;
         public TextView mealDate;
         public ImageView mealPhoto;
+        public TextView mealLocation;
 
         public MealViewHolder(View view) {
             super(view);
@@ -97,6 +99,7 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
             mealCalories = view.findViewById(R.id.meal_calories);
             mealDate = view.findViewById(R.id.meal_date);
             mealPhoto = view.findViewById(R.id.meal_photo);
+            mealLocation = view.findViewById(R.id.meal_location);
         }
     }
 }

@@ -14,11 +14,12 @@ public class Meal {
     private Double protein;
     private String date;
     private String imageurl;
+    private String location;
     public Meal() {
 
     }
 
-    public Meal(String name, Double calories, Double fat, Double cholesterol, Double sodium, Double carbohydrate, Double fiber, Double sugars, Double protein, String date, String imageurl) {
+    public Meal(String name, Double calories, Double fat, Double cholesterol, Double sodium, Double carbohydrate, Double fiber, Double sugars, Double protein, String date, String imageurl,String location) {
         this.name = name;
         this.calories = calories;
         this.fat = fat;
@@ -30,6 +31,7 @@ public class Meal {
         this.protein = protein;
         this.date = date;
         this.imageurl = imageurl;
+        this.location = location;
     }
 
     // Getters and setters for all fields
@@ -119,6 +121,14 @@ public class Meal {
 
     public void setImageurl(String imageurl) {
         this.imageurl = imageurl;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }
 
