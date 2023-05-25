@@ -78,7 +78,7 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
                 // Handle any errors
             }
         });
-        holder.mealLocation.setText("Location: "+meal.getLocation());
+        holder.mealLocation.setText("Location: "+meal.getLocation() + " (" + meal.getPlace() +")");
     }
 
     @Override
