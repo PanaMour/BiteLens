@@ -37,10 +37,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -103,7 +107,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private Uri foodImageUri;
     String location = "";
     private boolean addedMeal = false;
-
+    private boolean selectedLocation = false;
+    AutoCompleteTextView editTextFilledExposedDropdown;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +123,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.bitelenslogo);
         }
+        String[] locations = new String[] {"Home", "Work", "Other"};
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        R.layout.dropdown_menu_popup_item,
+                        locations);
+        editTextFilledExposedDropdown = findViewById(R.id.location_autocomplete);
+        editTextFilledExposedDropdown.setAdapter(adapter);
 
         drawerLayout = findViewById(R.id.drawer_layout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -150,7 +163,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 search(searchBar.getText().toString());
             }
         });
+        editTextFilledExposedDropdown.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No need to do anything here
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!s.toString().isEmpty() && !editTextFilledExposedDropdown.getText().toString().isEmpty()) {
+                    selectedLocation = true;
+                } else {
+                    selectedLocation = false;
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No need to do anything here
+            }
+        });
         db = FirebaseFirestore.getInstance();
 
         Button addMealButton = findViewById(R.id.add_meal_button);
@@ -161,11 +193,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     getLocation();
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) MainActivity.this);
                     Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
                     if (loc != null) {
                         location = loc.getLatitude() + "," + loc.getLongitude();
                     }
                     if (addedMeal) {
+                        if(selectedLocation){
                         String foodName = "";  // replace with actual food name
                         String calories = "";  // replace with actual calories
                         String[] nutritionalInfoLines = nutritionInfo.getText().toString().split("\n");
@@ -218,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        locationTextView.setText("Location: " + city);
+                        locationTextView.setText("Location: " + city + " (" + editTextFilledExposedDropdown.getText() + ")");
 
                         // Add the current date as a Timestamp
                         meal.put("Date", com.google.firebase.Timestamp.now());
@@ -284,8 +316,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         // Create the AlertDialog object and return it
                         builder.create().show();
                     } else {
-                        Toast.makeText(MainActivity.this, "No meal information in activity.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Please select Current Location.", Toast.LENGTH_SHORT).show();
                     }
+                    }else {
+                            Toast.makeText(MainActivity.this, "No meal information in activity.", Toast.LENGTH_SHORT).show();
+                        }
                 }else{
                     askForLocationPermission();
                 }
