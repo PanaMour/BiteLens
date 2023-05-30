@@ -254,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
                         // Add the current date as a Timestamp
                         meal.put("Date", com.google.firebase.Timestamp.now());
+                        meal.put("StatDate", com.google.firebase.Timestamp.now());
                         meal.put("Location", city);
                         meal.put("Place", editTextFilledExposedDropdown.getText().toString());
 

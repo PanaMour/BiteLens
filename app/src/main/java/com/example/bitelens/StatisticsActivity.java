@@ -11,14 +11,21 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -50,7 +57,70 @@ public class StatisticsActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.nav_view);
         setupDrawerContent(navigationView);
 
-        List<Integer> data = new ArrayList<>();
+        LinearLayout layout = findViewById(R.id.barGraphContainer);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        Calendar calendar = Calendar.getInstance();
+        int currentMonth = calendar.get(Calendar.MONTH);
+        int currentYear = calendar.get(Calendar.YEAR);
+        Calendar start = Calendar.getInstance();
+        start.set(currentYear, currentMonth, 1);
+        Calendar end = Calendar.getInstance();
+        end.set(currentYear, currentMonth, end.getActualMaximum(Calendar.DAY_OF_MONTH));
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Query query = db.collection("users").document(user.getUid()).collection("meals")
+                .whereGreaterThanOrEqualTo("StatDate", start.getTime())
+                .whereLessThanOrEqualTo("StatDate", end.getTime());
+        int[] caloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+        query.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    Date mealDate = document.getDate("StatDate");
+                    int calories = document.getLong("Calories").intValue();
+                    Calendar mealCalendar = Calendar.getInstance();
+                    mealCalendar.setTime(mealDate);
+                    int dayOfMonth = mealCalendar.get(Calendar.DAY_OF_MONTH);
+                    caloriesPerDay[dayOfMonth - 1] += calories;
+                }
+                // At this point, you have the calories per day for the current month.
+                // You can convert the array to a list and pass it to your BarGraphView.
+                List<Integer> data = new ArrayList<>();
+                for (int calories : caloriesPerDay) {
+                    data.add(calories);
+                }
+
+                /*data.add(2000);
+
+                data.add(2300);
+                data.add(1800);
+                data.add(2400);
+                data.add(2000);
+                data.add(2300);
+
+                int totalValues = 30;
+                int zeroPercentage = 10;
+                int zeroCount = (int) Math.round(totalValues * zeroPercentage / 100.0);
+
+                Random random = new Random();
+
+                for (int i = 0; i < totalValues - zeroCount; i++) {
+                    int randomValue = random.nextInt(1000) + 1800; // Generate random values between 1800 and 2800
+                    data.add(randomValue);
+                }
+
+                for (int i = 0; i < zeroCount; i++) {
+                    data.add(0);
+                }*/
+                BarGraphView barGraphView = new BarGraphView(this, data);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 750);
+                barGraphView.setLayoutParams(params);
+                layout.addView(barGraphView);
+            } else {
+                Log.d("TAG", "Error getting documents: ", task.getException());
+            }
+        });
+
+
+        /*List<Integer> data = new ArrayList<>();
         data.add(2000);
         data.add(2500);
         data.add(2300);
@@ -73,14 +143,13 @@ public class StatisticsActivity extends AppCompatActivity {
         for (int i = 0; i < zeroCount; i++) {
             data.add(0);
         }
-        LinearLayout layout = findViewById(R.id.barGraphContainer);
-        BarGraphView graph = new BarGraphView(this, data);
+
+        BarGraphView graph = new BarGraphView(this, data);*/
 
         // Set custom width and height
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 750);
-        graph.setLayoutParams(params);
 
-        layout.addView(graph);
+
+
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
