@@ -19,13 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +79,7 @@ public class HistoryActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             List<Meal> meals = new ArrayList<>();
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                Meal meal = new Meal(document.get("Food name").toString(), ((Double) document.get("Calories")),(Double)document.get("Total fat"),(Double)document.get("Cholesterol"),(Double)document.get("Sodium"),(Double)document.get("Total carbohydrate"),(Double)document.get("Dietary fiber"),(Double)document.get("Sugars"),(Double)document.get("Protein"),document.get("Date").toString(),document.get("ImageURL").toString(),document.get("Location").toString(),document.get("Place").toString(), (Timestamp) document.get("StatDate"));
+                                Meal meal = new Meal(document.get("Food name").toString(), ((Double) document.get("Calories")),(Double)document.get("Total fat"),(Double)document.get("Cholesterol"),(Double)document.get("Sodium"),(Double)document.get("Total carbohydrate"),(Double)document.get("Dietary fiber"),(Double)document.get("Sugars"),(Double)document.get("Protein"),document.get("Date").toString(),document.get("ImageURL").toString(),document.get("Location").toString(),document.get("Place").toString());
                                 meals.add(meal);
                                 System.out.println(document.get("Date").toString());
                             }

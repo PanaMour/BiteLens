@@ -1,6 +1,7 @@
 package com.example.bitelens;
 
-import java.sql.Timestamp;
+import com.google.firebase.Timestamp;
+
 import java.util.Date;
 
 public class Meal {
@@ -22,7 +23,7 @@ public class Meal {
 
     }
 
-    public Meal(String name, Double calories, Double fat, Double cholesterol, Double sodium, Double carbohydrate, Double fiber, Double sugars, Double protein, String date, String imageurl,String location,String place, Timestamp statdate) {
+    public Meal(String name, Double calories, Double fat, Double cholesterol, Double sodium, Double carbohydrate, Double fiber, Double sugars, Double protein, String date, String imageurl,String location,String place) {
         this.name = name;
         this.calories = calories;
         this.fat = fat;
@@ -36,7 +37,7 @@ public class Meal {
         this.imageurl = imageurl;
         this.location = location;
         this.place = place;
-        this.statdate = statdate;
+
     }
 
     // Getters and setters for all fields
