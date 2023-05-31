@@ -37,8 +37,15 @@ public class BarGraphView extends View {
             // Draw x-axis
             canvas.drawLine(100, getHeight() - 200, getWidth(), getHeight() - 200, paint);
 
+            if (maxValue == 0) {
+                // If maxValue is zero, display a "No Data" message.
+                paint.setTextSize(60); // Set a bigger text size for the no data message.
+                paint.setTextAlign(Paint.Align.CENTER); // Center the text.
+                canvas.drawText("No Data", getWidth() / 2, getHeight() / 2, paint);
+                return; // No need to do more drawing, so return here.
+            }
+
             // Draw y-axis labels
-            int labelHeight = (getHeight() - 200) / (maxValue / 500);
             for (int i = 500; i <= maxValue; i += 500) {
                 int textHeight = (int) (getHeight() - 200 - ((i / (float) maxValue) * (getHeight() - 200)));
                 canvas.drawText(String.valueOf(i), 30, textHeight + 15, paint); // Adjusted x-coordinate from 50 to 30
@@ -53,4 +60,5 @@ public class BarGraphView extends View {
             }
         }
     }
+
 }

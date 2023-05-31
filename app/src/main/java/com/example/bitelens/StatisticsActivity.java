@@ -13,8 +13,12 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
@@ -24,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -98,34 +103,91 @@ public class StatisticsActivity extends AppCompatActivity {
                 data.add(0);
                 data.add(0);
                 data.add(0);
-                /*data.add(2000);
-
-                data.add(2300);
-                data.add(1800);
-                data.add(2400);
-                data.add(2000);
-                data.add(2300);
-
-                int totalValues = 30;
-                int zeroPercentage = 10;
-                int zeroCount = (int) Math.round(totalValues * zeroPercentage / 100.0);
-
-                Random random = new Random();
-
-                for (int i = 0; i < totalValues - zeroCount; i++) {
-                    int randomValue = random.nextInt(1000) + 1800; // Generate random values between 1800 and 2800
-                    data.add(randomValue);
-                }
-
-                for (int i = 0; i < zeroCount; i++) {
-                    data.add(0);
-                }*/
                 BarGraphView barGraphView = new BarGraphView(this, data);
+                barGraphView.setTag("BarGraphView");
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 750);
                 barGraphView.setLayoutParams(params);
                 layout.addView(barGraphView);
             } else {
                 Log.d("TAG", "Error getting documents: ", task.getException());
+            }
+        });
+
+        // Get the Spinner from your layout
+        Spinner monthSpinner = findViewById(R.id.month_spinner);
+
+        // Create an ArrayAdapter using the string array (months) and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.months, android.R.layout.simple_spinner_item);
+
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Apply the adapter to the spinner
+        monthSpinner.setAdapter(adapter);
+
+        // Set the spinner's default selection to the current month
+        monthSpinner.setSelection(currentMonth);
+
+
+        // Set a listener to be invoked when an item in this AdapterView has been selected
+        monthSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                int selectedMonth = position; // The position corresponds to the selected month (0 = January, 1 = February, ...)
+
+                // Now you can use the selected month to update your query
+                Calendar start = Calendar.getInstance();
+                start.set(Calendar.YEAR, currentYear);
+                start.set(Calendar.MONTH, selectedMonth);
+                start.set(Calendar.DAY_OF_MONTH, 1);
+
+                Calendar end = Calendar.getInstance();
+                end.set(Calendar.YEAR, currentYear);
+                end.set(Calendar.MONTH, selectedMonth);
+                end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH));
+                String monthName = new DateFormatSymbols().getMonths()[selectedMonth];
+                month.setText("Month: " + monthName);
+
+                Query query = db.collection("users").document(user.getUid()).collection("meals")
+                        .whereGreaterThanOrEqualTo("StatDate", start.getTime())
+                        .whereLessThanOrEqualTo("StatDate", end.getTime());
+
+                int[] caloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+                query.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Date mealDate = document.getDate("StatDate");
+                            int calories = document.getLong("Calories").intValue();
+                            Calendar mealCalendar = Calendar.getInstance();
+                            mealCalendar.setTime(mealDate);
+                            int dayOfMonth = mealCalendar.get(Calendar.DAY_OF_MONTH);
+                            caloriesPerDay[dayOfMonth - 1] += calories;
+                        }
+                        // At this point, you have the calories per day for the selected month.
+                        // You can convert the array to a list and pass it to your BarGraphView.
+                        List<Integer> data = new ArrayList<>();
+                        for (int calories : caloriesPerDay) {
+                            data.add(calories);
+                        }
+                        data.add(0);
+                        data.add(0);
+                        data.add(0);
+                        View oldGraph = layout.findViewWithTag("BarGraphView");  // Find the BarGraphView using the tag
+                        if (oldGraph != null) layout.removeView(oldGraph);
+                        BarGraphView barGraphView = new BarGraphView(StatisticsActivity.this, data);
+                        barGraphView.setTag("BarGraphView");
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 750);
+                        barGraphView.setLayoutParams(params);
+                        layout.addView(barGraphView);
+                    } else {
+                        Log.d("TAG", "Error getting documents: ", task.getException());
+                    }
+                });
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Another interface callback
             }
         });
 
