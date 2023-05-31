@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,16 +24,19 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 public class StatisticsActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+    private TextView month;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +51,7 @@ public class StatisticsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.bitelenslogo);
         }
-
+        month = findViewById(R.id.monthView);
         drawerLayout = findViewById(R.id.drawer_layout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
@@ -61,6 +65,9 @@ public class StatisticsActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         Calendar calendar = Calendar.getInstance();
         int currentMonth = calendar.get(Calendar.MONTH);
+        String monthName = new SimpleDateFormat("MMMM", Locale.getDefault()).format(calendar.getTime());
+        String monthText = "Month: " + monthName;
+        month.setText(monthText);
         int currentYear = calendar.get(Calendar.YEAR);
         Calendar start = Calendar.getInstance();
         start.set(currentYear, currentMonth, 1);
@@ -86,8 +93,11 @@ public class StatisticsActivity extends AppCompatActivity {
                 List<Integer> data = new ArrayList<>();
                 for (int calories : caloriesPerDay) {
                     data.add(calories);
+                    System.out.println("Calories " + calories);
                 }
-
+                data.add(0);
+                data.add(0);
+                data.add(0);
                 /*data.add(2000);
 
                 data.add(2300);

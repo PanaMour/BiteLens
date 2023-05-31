@@ -31,8 +31,28 @@
                 android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:layout_marginRight="10dp">
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:id="@+id/statgraphLabel1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:foregroundGravity="center"
+                    android:gravity="center"
+                    android:text="Calories Consumed per Day"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/monthView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:foregroundGravity="center"
+                    android:gravity="center"
+                    android:text="Month: "
+                    android:textSize="18dp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </ScrollView>
 
