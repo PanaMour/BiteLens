@@ -25,5 +25,10 @@
         <item>November</item>
         <item>December</item>
     </string-array>
+    <string-array name="places">
+        <item>Home</item>
+        <item>Work</item>
+        <item>Other</item>
+    </string-array>
 
 </resources>

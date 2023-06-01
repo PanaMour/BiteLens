@@ -33,6 +33,7 @@
                 android:layout_marginBottom="20dp"
                 android:orientation="vertical">
 
+                <!-- Month Spinner -->
                 <Spinner
                     android:id="@+id/month_spinner"
                     android:layout_width="wrap_content"
@@ -41,13 +42,14 @@
                     android:layout_marginBottom="5dp"
                     android:gravity="center" />
 
+                <!-- Month Labels -->
                 <TextView
                     android:id="@+id/statgraphLabel1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:foregroundGravity="center"
                     android:gravity="center"
-                    android:text="Calories Consumed per Day"
+                    android:text="Calories Consumed per Day (Month)"
                     android:textSize="20dp"
                     android:textStyle="bold" />
 
@@ -61,7 +63,54 @@
                     android:text="Month: "
                     android:textSize="18dp"
                     android:textStyle="bold" />
+
+                <!-- Placeholder for Month Graph -->
+                <LinearLayout
+                    android:id="@+id/monthGraphContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+
+                <!-- Place Spinner -->
+                <Spinner
+                    android:id="@+id/place_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:gravity="center" />
+
+                <!-- Place Labels -->
+                <TextView
+                    android:id="@+id/statgraphLabel2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:foregroundGravity="center"
+                    android:gravity="center"
+                    android:text="Calories Consumed per Day (Place)"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/placeView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:foregroundGravity="center"
+                    android:gravity="center"
+                    android:text="Place: "
+                    android:textSize="18dp"
+                    android:textStyle="bold" />
+
+                <!-- Placeholder for Place Graph -->
+                <LinearLayout
+                    android:id="@+id/placeGraphContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
             </LinearLayout>
+
         </ScrollView>
 
     </LinearLayout>
