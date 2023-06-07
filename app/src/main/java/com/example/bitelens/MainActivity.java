@@ -242,7 +242,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
                         dateTextView.setText("Date: " + dateFormat.format(Calendar.getInstance().getTime()));
-                        getLocation();
                         Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
                         String city;
                         try {
@@ -318,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         // Create the AlertDialog object and return it
                         builder.create().show();
                     } else {
-                        Toast.makeText(MainActivity.this, "Please select Current Location.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Please select Current Place of Interest.", Toast.LENGTH_SHORT).show();
                     }
                     }else {
                             Toast.makeText(MainActivity.this, "No meal information in activity.", Toast.LENGTH_SHORT).show();
@@ -672,7 +671,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 @Override
                 public void onLocationChanged(Location loc) {
                     // Update the location variable every time the device's location changes
-                    location = loc.getLatitude() + "," + loc.getLongitude();
+                    if(loc!=null){
+                        location = loc.getLatitude() + "," + loc.getLongitude();
+                    }
                 }
             });
         }

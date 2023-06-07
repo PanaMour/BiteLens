@@ -22,7 +22,7 @@
         android:theme="@style/Theme.BiteLens"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".StatisticsActivity"
             android:exported="false" />
         <activity
             android:name=".HistoryActivity"
@@ -37,7 +37,7 @@
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".StatisticsActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
