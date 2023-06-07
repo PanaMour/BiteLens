@@ -30,5 +30,9 @@
         <item>Work</item>
         <item>Other</item>
     </string-array>
+    <string-array name="data_source_array">
+        <item>You</item>
+        <item>All Users</item>
+    </string-array>
 
 </resources>

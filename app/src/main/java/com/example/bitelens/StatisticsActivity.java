@@ -88,41 +88,13 @@ public class StatisticsActivity extends AppCompatActivity {
         Calendar end = Calendar.getInstance();
         end.set(currentYear, currentMonth, end.getActualMaximum(Calendar.DAY_OF_MONTH));
         db = FirebaseFirestore.getInstance();
-        /*Query query = db.collection("users").document(user.getUid()).collection("meals")
-                .whereGreaterThanOrEqualTo("StatDate", start.getTime())
-                .whereLessThanOrEqualTo("StatDate", end.getTime());
-        int[] caloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
-        query.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    Date mealDate = document.getDate("StatDate");
-                    int calories = document.getLong("Calories").intValue();
-                    Calendar mealCalendar = Calendar.getInstance();
-                    mealCalendar.setTime(mealDate);
-                    int dayOfMonth = mealCalendar.get(Calendar.DAY_OF_MONTH);
-                    caloriesPerDay[dayOfMonth - 1] += calories;
-                }
-                // At this point, you have the calories per day for the current month.
-                // You can convert the array to a list and pass it to your BarGraphView.
-                List<Integer> data = new ArrayList<>();
-                for (int calories : caloriesPerDay) {
-                    data.add(calories);
-                    System.out.println("Calories " + calories);
-                }
-                data.add(0);
-                data.add(0);
-                data.add(0);
-                BarGraphView barGraphView = new BarGraphView(this, data);
-                barGraphView.setTag("BarGraphView");
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 750);
-                barGraphView.setLayoutParams(params);
-                layout.addView(barGraphView);
-            } else {
-                Log.d("TAG", "Error getting documents: ", task.getException());
-            }
-        });*/
 
         // Get the Spinner from your layout
+        Spinner dataSourceSpinner = findViewById(R.id.dataSourceSpinner);
+        ArrayAdapter<CharSequence> dataSourceAdapter = ArrayAdapter.createFromResource(this, R.array.data_source_array, android.R.layout.simple_spinner_item);
+        dataSourceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dataSourceSpinner.setAdapter(dataSourceAdapter);
+
         Spinner monthSpinner = findViewById(R.id.month_spinner);
         Spinner placeSpinner = findViewById(R.id.place_spinner);
 
@@ -140,12 +112,28 @@ public class StatisticsActivity extends AppCompatActivity {
 
         // Set the spinner's default selection to the current month
         monthSpinner.setSelection(currentMonth);
+        dataSourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedMonth = monthSpinner.getSelectedItem().toString();
+                String selectedPlace = placeSpinner.getSelectedItem().toString();
+                String selectedDataSource = adapterView.getItemAtPosition(i).toString();
+                updateMonthGraph(adapter.getPosition(selectedMonth),selectedDataSource);
+                updatePlaceGraph(adapter.getPosition(selectedMonth),selectedPlace,selectedDataSource);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
         monthSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedPlace = placeSpinner.getSelectedItem().toString(); // Get the currently selected place
-                updateMonthGraph(position);
-                updatePlaceGraph(position,selectedPlace);
+                String selectedDataSource = dataSourceSpinner.getSelectedItem().toString();
+                updateMonthGraph(position,selectedDataSource);
+                updatePlaceGraph(position,selectedPlace,selectedDataSource);
             }
 
             @Override
@@ -159,8 +147,9 @@ public class StatisticsActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 int selectedMonth = monthSpinner.getSelectedItemPosition(); // Get the currently selected month
                 String selectedPlace = adapterView.getItemAtPosition(i).toString(); // Get the selected place
+                String selectedDataSource = dataSourceSpinner.getSelectedItem().toString();
                 place.setText("Place " + selectedPlace);
-                updatePlaceGraph(selectedMonth, selectedPlace);
+                updatePlaceGraph(selectedMonth, selectedPlace,selectedDataSource);
             }
 
             @Override
@@ -168,13 +157,9 @@ public class StatisticsActivity extends AppCompatActivity {
                 // Do nothing
             }
         });
-
-
-
-
     }
 
-    void updateMonthGraph(int selectedMonth) {
+    void updateMonthGraph(int selectedMonth, String dataSource) {
         // The start and end dates of the selected month
         Calendar start = Calendar.getInstance();
         start.set(Calendar.YEAR, currentYear);
@@ -191,11 +176,19 @@ public class StatisticsActivity extends AppCompatActivity {
         end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH));
 
         // Query for meals within the date range
-        Query query = db.collection("users").document(user.getUid()).collection("meals")
-                .whereGreaterThanOrEqualTo("StatDate", start.getTime())
-                .whereLessThanOrEqualTo("StatDate", end.getTime());
+        Query query;
+        if (dataSource.equals("You")) {
+            query = db.collection("users").document(user.getUid()).collection("meals")
+                    .whereGreaterThanOrEqualTo("StatDate", start.getTime())
+                    .whereLessThanOrEqualTo("StatDate", end.getTime());
+        } else {
+            query = db.collectionGroup("meals")
+                    .whereGreaterThanOrEqualTo("StatDate", start.getTime())
+                    .whereLessThanOrEqualTo("StatDate", end.getTime());
+        }
 
-        int[] caloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+        int[] totalCaloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+        int[] countsPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
 
         query.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -205,13 +198,20 @@ public class StatisticsActivity extends AppCompatActivity {
                     Calendar mealCalendar = Calendar.getInstance();
                     mealCalendar.setTime(mealDate);
                     int dayOfMonth = mealCalendar.get(Calendar.DAY_OF_MONTH);
-                    caloriesPerDay[dayOfMonth - 1] += calories;
+                    totalCaloriesPerDay[dayOfMonth - 1] += calories;
+                    if (dataSource.equalsIgnoreCase("All users")) {
+                        countsPerDay[dayOfMonth - 1] += 1;
+                    }
                 }
 
-                // Convert the array to a list and pass it to your BarGraphView.
+                // Calculate average calories per day if dataSource is "All Users"
                 List<Integer> data = new ArrayList<>();
-                for (int calories : caloriesPerDay) {
-                    data.add(calories);
+                for (int i = 0; i < totalCaloriesPerDay.length; i++) {
+                    if (dataSource.equalsIgnoreCase("All users") && countsPerDay[i] > 0) {
+                        data.add(totalCaloriesPerDay[i] / countsPerDay[i]);
+                    } else {
+                        data.add(totalCaloriesPerDay[i]);
+                    }
                 }
 
                 // Add padding for displaying last few days of the month
@@ -234,7 +234,8 @@ public class StatisticsActivity extends AppCompatActivity {
         });
     }
 
-    void updatePlaceGraph(int selectedMonth, String selectedPlace) {
+
+    void updatePlaceGraph(int selectedMonth, String selectedPlace, String dataSource) {
         // The start and end dates of the selected month
         Calendar start = Calendar.getInstance();
         start.set(Calendar.YEAR, currentYear);
@@ -247,12 +248,21 @@ public class StatisticsActivity extends AppCompatActivity {
         end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH));
 
         // Query for meals within the date range and place
-        Query query = db.collection("users").document(user.getUid()).collection("meals")
-                .whereGreaterThanOrEqualTo("StatDate", start.getTime())
-                .whereLessThanOrEqualTo("StatDate", end.getTime())
-                .whereEqualTo("Place",selectedPlace);
+        Query query;
+        if (dataSource.equalsIgnoreCase("You")) {
+            query = db.collection("users").document(user.getUid()).collection("meals")
+                    .whereGreaterThanOrEqualTo("StatDate", start.getTime())
+                    .whereLessThanOrEqualTo("StatDate", end.getTime())
+                    .whereEqualTo("Place", selectedPlace);
+        } else {
+            query = db.collectionGroup("meals")
+                    .whereGreaterThanOrEqualTo("StatDate", start.getTime())
+                    .whereLessThanOrEqualTo("StatDate", end.getTime())
+                    .whereEqualTo("Place", selectedPlace);
+        }
 
-        int[] caloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+        int[] totalCaloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+        int[] countsPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
 
         query.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -262,13 +272,20 @@ public class StatisticsActivity extends AppCompatActivity {
                     Calendar mealCalendar = Calendar.getInstance();
                     mealCalendar.setTime(mealDate);
                     int dayOfMonth = mealCalendar.get(Calendar.DAY_OF_MONTH);
-                    caloriesPerDay[dayOfMonth - 1] += calories;
+                    totalCaloriesPerDay[dayOfMonth - 1] += calories;
+                    if (dataSource.equalsIgnoreCase("All users")) {
+                        countsPerDay[dayOfMonth - 1] += 1;
+                    }
                 }
 
-                // Convert the array to a list and pass it to your BarGraphView.
+                // Calculate average calories per day if dataSource is "All Users"
                 List<Integer> data = new ArrayList<>();
-                for (int calories : caloriesPerDay) {
-                    data.add(calories);
+                for (int i = 0; i < totalCaloriesPerDay.length; i++) {
+                    if (dataSource.equalsIgnoreCase("All users") && countsPerDay[i] > 0) {
+                        data.add(totalCaloriesPerDay[i] / countsPerDay[i]);
+                    } else {
+                        data.add(totalCaloriesPerDay[i]);
+                    }
                 }
 
                 // Add padding for displaying last few days of the month
