@@ -2,6 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
+    android:background="@color/logobg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".StatisticsActivity">
@@ -45,7 +46,9 @@
                         android:layout_gravity="center"
                         android:layout_weight="1"
                         android:layout_marginBottom="5dp"
-                        android:gravity="center" />
+                        android:gravity="center"
+                        android:background="@drawable/spinner_border"
+                        android:padding="8dp" />
 
                     <Spinner
                         android:id="@+id/month_spinner"
@@ -54,11 +57,11 @@
                         android:layout_gravity="center"
                         android:layout_weight="1"
                         android:layout_marginBottom="5dp"
-                        android:gravity="center" />
+                        android:gravity="center"
+                        android:background="@drawable/spinner_border"
+                        android:padding="8dp" />
 
                 </LinearLayout>
-
-
                 <!-- Month Labels -->
                 <TextView
                     android:id="@+id/statgraphLabel1"
@@ -74,7 +77,6 @@
                     android:id="@+id/monthView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
                     android:foregroundGravity="center"
                     android:gravity="center"
                     android:text="Month: "
@@ -91,11 +93,12 @@
                 <!-- Place Spinner -->
                 <Spinner
                     android:id="@+id/place_spinner"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
+                    android:background="@drawable/spinner_border"
+                    android:padding="4dp"
                     android:gravity="center" />
 
                 <!-- Place Labels -->

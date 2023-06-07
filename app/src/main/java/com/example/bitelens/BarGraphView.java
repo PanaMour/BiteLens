@@ -2,6 +2,7 @@ package com.example.bitelens;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 
@@ -52,7 +53,7 @@ public class BarGraphView extends View {
             }
 
             // Set the paint color for drawing the bars
-            paint.setColor(android.graphics.Color.BLUE);
+            paint.setColor(Color.DKGRAY);
 
             for (int i = 0; i < data.size(); i++) {
                 int height = (getHeight() - 200) * data.get(i) / maxValue;  // The height of the bar
