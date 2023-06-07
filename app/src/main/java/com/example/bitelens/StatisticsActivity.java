@@ -31,11 +31,15 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class StatisticsActivity extends AppCompatActivity {
 
@@ -187,33 +191,40 @@ public class StatisticsActivity extends AppCompatActivity {
                     .whereLessThanOrEqualTo("StatDate", end.getTime());
         }
 
-        int[] totalCaloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
-        int[] countsPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
-
         query.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                Map<String, int[]> userCaloriesPerDay = new HashMap<>();
+
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     Date mealDate = document.getDate("StatDate");
                     int calories = document.getLong("Calories").intValue();
+
+                    // Get the UserId from the parent of the document reference
+                    String userId = document.getReference().getParent().getParent().getId();
+
                     Calendar mealCalendar = Calendar.getInstance();
                     mealCalendar.setTime(mealDate);
                     int dayOfMonth = mealCalendar.get(Calendar.DAY_OF_MONTH);
-                    totalCaloriesPerDay[dayOfMonth - 1] += calories;
-                    if (dataSource.equalsIgnoreCase("All users")) {
-                        countsPerDay[dayOfMonth - 1] += 1;
+
+                    if (!userCaloriesPerDay.containsKey(userId)) {
+                        userCaloriesPerDay.put(userId, new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)]);
+                    }
+                    userCaloriesPerDay.get(userId)[dayOfMonth - 1] += calories;
+                }
+
+                int[] averageCaloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+                for (int[] userCalories : userCaloriesPerDay.values()) {
+                    for (int i = 0; i < userCalories.length; i++) {
+                        averageCaloriesPerDay[i] += userCalories[i];
                     }
                 }
 
-                // Calculate average calories per day if dataSource is "All Users"
-                List<Integer> data = new ArrayList<>();
-                for (int i = 0; i < totalCaloriesPerDay.length; i++) {
-                    if (dataSource.equalsIgnoreCase("All users") && countsPerDay[i] > 0) {
-                        data.add(totalCaloriesPerDay[i] / countsPerDay[i]);
-                    } else {
-                        data.add(totalCaloriesPerDay[i]);
-                    }
+                for (int i = 0; i < averageCaloriesPerDay.length; i++) {
+                    if(userCaloriesPerDay.size()!=0)
+                        averageCaloriesPerDay[i] /= userCaloriesPerDay.size();
                 }
 
+                List<Integer> data = Arrays.stream(averageCaloriesPerDay).boxed().collect(Collectors.toList());
                 // Add padding for displaying last few days of the month
                 data.add(0);
                 data.add(0);
@@ -261,33 +272,40 @@ public class StatisticsActivity extends AppCompatActivity {
                     .whereEqualTo("Place", selectedPlace);
         }
 
-        int[] totalCaloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
-        int[] countsPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
-
         query.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                Map<String, int[]> userCaloriesPerDay = new HashMap<>();
+
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     Date mealDate = document.getDate("StatDate");
                     int calories = document.getLong("Calories").intValue();
+
+                    // Get the UserId from the parent of the document reference
+                    String userId = document.getReference().getParent().getParent().getId();
+
                     Calendar mealCalendar = Calendar.getInstance();
                     mealCalendar.setTime(mealDate);
                     int dayOfMonth = mealCalendar.get(Calendar.DAY_OF_MONTH);
-                    totalCaloriesPerDay[dayOfMonth - 1] += calories;
-                    if (dataSource.equalsIgnoreCase("All users")) {
-                        countsPerDay[dayOfMonth - 1] += 1;
+
+                    if (!userCaloriesPerDay.containsKey(userId)) {
+                        userCaloriesPerDay.put(userId, new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)]);
+                    }
+                    userCaloriesPerDay.get(userId)[dayOfMonth - 1] += calories;
+                }
+
+                int[] averageCaloriesPerDay = new int[end.getActualMaximum(Calendar.DAY_OF_MONTH)];
+                for (int[] userCalories : userCaloriesPerDay.values()) {
+                    for (int i = 0; i < userCalories.length; i++) {
+                        averageCaloriesPerDay[i] += userCalories[i];
                     }
                 }
 
-                // Calculate average calories per day if dataSource is "All Users"
-                List<Integer> data = new ArrayList<>();
-                for (int i = 0; i < totalCaloriesPerDay.length; i++) {
-                    if (dataSource.equalsIgnoreCase("All users") && countsPerDay[i] > 0) {
-                        data.add(totalCaloriesPerDay[i] / countsPerDay[i]);
-                    } else {
-                        data.add(totalCaloriesPerDay[i]);
-                    }
+                for (int i = 0; i < averageCaloriesPerDay.length; i++) {
+                    if(userCaloriesPerDay.size()!=0)
+                        averageCaloriesPerDay[i] /= userCaloriesPerDay.size();
                 }
 
+                List<Integer> data = Arrays.stream(averageCaloriesPerDay).boxed().collect(Collectors.toList());
                 // Add padding for displaying last few days of the month
                 data.add(0);
                 data.add(0);
