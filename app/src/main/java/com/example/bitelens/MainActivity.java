@@ -54,6 +54,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -190,145 +192,153 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             @Override
             public void onClick(View v) {
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    getLocation();
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) MainActivity.this);
-                    Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (loc != null) {
-                        location = loc.getLatitude() + "," + loc.getLongitude();
-                    }
-                    if (addedMeal) {
-                        if(selectedLocation){
-                        String foodName = "";  // replace with actual food name
-                        String calories = "";  // replace with actual calories
-                        String[] nutritionalInfoLines = nutritionInfo.getText().toString().split("\n");
+                    // Create a new FusedLocationProviderClient
+                    FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
 
-                        // Create a HashMap to store the meal data
-                        Map<String, Object> meal = new HashMap<>();
+                    // Get the last known location
+                    fusedLocationClient.getLastLocation().addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location loc) {
+                            // If location is available
+                            if (loc != null) {
+                                String location = loc.getLatitude() + "," + loc.getLongitude();
 
-                        // Parse each line and store the data in the HashMap
-                        for (String line : nutritionalInfoLines) {
-                            String[] parts = line.split(": ");
-                            if (parts.length == 2) {
-                                String key = parts[0].trim();
-                                String value = parts[1].trim();
-                                if (key.equals("Calories") || key.contains("fat") || key.contains("Cholesterol") || key.contains("Sodium")
-                                        || key.contains("carbohydrate") || key.contains("fiber") || key.contains("Sugars") || key.contains("Protein")) {
-                                    // Remove the units from the value (g, mg, etc.)
-                                    value = value.replaceAll("[^\\d.]", "").trim();
-                                    if (key.equals("Calories")) {
-                                        calories = value;
+                                // Add your meal adding logic here
+                                if (addedMeal) {
+                                    if (selectedLocation) {
+                                        String foodName = "";  // replace with actual food name
+                                        String calories = "";  // replace with actual calories
+                                        String[] nutritionalInfoLines = nutritionInfo.getText().toString().split("\n");
+
+                                        // Create a HashMap to store the meal data
+                                        Map<String, Object> meal = new HashMap<>();
+
+                                        // Parse each line and store the data in the HashMap
+                                        for (String line : nutritionalInfoLines) {
+                                            String[] parts = line.split(": ");
+                                            if (parts.length == 2) {
+                                                String key = parts[0].trim();
+                                                String value = parts[1].trim();
+                                                if (key.equals("Calories") || key.contains("fat") || key.contains("Cholesterol") || key.contains("Sodium")
+                                                        || key.contains("carbohydrate") || key.contains("fiber") || key.contains("Sugars") || key.contains("Protein")) {
+                                                    // Remove the units from the value (g, mg, etc.)
+                                                    value = value.replaceAll("[^\\d.]", "").trim();
+                                                    if (key.equals("Calories")) {
+                                                        calories = value;
+                                                    }
+                                                    meal.put(key, Double.parseDouble(value));
+                                                } else {
+                                                    if (key.contains("name")) {
+                                                        foodName = value;
+                                                    }
+                                                    meal.put(key, value);
+                                                }
+                                            }
+                                        }
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                        LayoutInflater inflater = getLayoutInflater();
+                                        View dialogView = inflater.inflate(R.layout.dialog_add_meal, null);
+                                        builder.setView(dialogView);
+
+                                        TextView foodNameTextView = dialogView.findViewById(R.id.food_name_textview);
+                                        TextView caloriesTextView = dialogView.findViewById(R.id.calories_textview);
+                                        TextView dateTextView = dialogView.findViewById(R.id.date);
+                                        TextView locationTextView = dialogView.findViewById(R.id.location_textview);
+                                        foodNameTextView.setText("Food: " + foodName);
+                                        caloriesTextView.setText("Calories: " + calories);
+                                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+                                        dateTextView.setText("Date: " + dateFormat.format(Calendar.getInstance().getTime()));
+                                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                                        String city;
+                                        try {
+                                            city = geocoder.getFromLocation(parseDouble(location.substring(0, location.indexOf(","))), parseDouble(location.substring(location.indexOf(",") + 1, location.length())), 1).get(0).getLocality();
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        locationTextView.setText("Location: " + city + " (" + editTextFilledExposedDropdown.getText() + ")");
+
+                                        // Add the current date as a Timestamp
+                                        meal.put("Date", com.google.firebase.Timestamp.now());
+                                        meal.put("StatDate", com.google.firebase.Timestamp.now());
+                                        meal.put("Location", city);
+                                        meal.put("Place", editTextFilledExposedDropdown.getText().toString());
+
+                                        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int id) {
+                                                        // User confirmed the dialog
+                                                        // Replace uid with the actual user id
+                                                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                                                        // Create a reference to the storage bucket
+                                                        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+
+                                                        // Create a timestamp for the file name
+                                                        SimpleDateFormat sdf = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault());
+                                                        String fileName = sdf.format(new Date());
+
+                                                        // Create a reference to the file location
+                                                        StorageReference fileRef = storageRef.child(fileName);
+
+                                                        // Upload the file
+                                                        fileRef.putFile(foodImageUri)
+                                                                .addOnSuccessListener(taskSnapshot -> {
+                                                                    // Get the download URL of the uploaded file
+                                                                    fileRef.getDownloadUrl()
+                                                                            .addOnSuccessListener(uri -> {
+                                                                                // Add the URL to the meal data
+                                                                                meal.put("ImageURL", fileName);
+
+                                                                                // Add the meal data to Firestore
+                                                                                db.collection("users").document(uid).collection("meals")
+                                                                                        .add(meal)
+                                                                                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                                                            @Override
+                                                                                            public void onSuccess(DocumentReference documentReference) {
+                                                                                                Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                                            }
+                                                                                        })
+                                                                                        .addOnFailureListener(new OnFailureListener() {
+                                                                                            @Override
+                                                                                            public void onFailure(@NonNull Exception e) {
+                                                                                                Toast.makeText(MainActivity.this, "Failed to add meal data to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                                            }
+                                                                                        });
+                                                                            })
+                                                                            .addOnFailureListener(e -> {
+                                                                                // Handle any errors
+                                                                            });
+                                                                })
+                                                                .addOnFailureListener(e -> {
+                                                                    // Handle any errors
+                                                                });
+                                                    }
+                                                })
+                                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int id) {
+                                                        // User cancelled the dialog
+                                                        // Nothing happens
+                                                    }
+                                                });
+
+                                        // Create the AlertDialog object and return it
+                                        builder.create().show();
                                     }
-                                    meal.put(key, Double.parseDouble(value));
                                 } else {
-                                    if (key.contains("name")) {
-                                        foodName = value;
-                                    }
-                                    meal.put(key, value);
+                                    Toast.makeText(MainActivity.this, "Please select Current Place of Interest.", Toast.LENGTH_SHORT).show();
                                 }
+
+                            } else {
+                                Toast.makeText(MainActivity.this, "No meal information in activity.", Toast.LENGTH_SHORT).show();
                             }
                         }
-
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        LayoutInflater inflater = getLayoutInflater();
-                        View dialogView = inflater.inflate(R.layout.dialog_add_meal, null);
-                        builder.setView(dialogView);
-
-                        TextView foodNameTextView = dialogView.findViewById(R.id.food_name_textview);
-                        TextView caloriesTextView = dialogView.findViewById(R.id.calories_textview);
-                        TextView dateTextView = dialogView.findViewById(R.id.date);
-                        TextView locationTextView = dialogView.findViewById(R.id.location_textview);
-                        foodNameTextView.setText("Food: " + foodName);
-                        caloriesTextView.setText("Calories: " + calories);
-                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-
-                        dateTextView.setText("Date: " + dateFormat.format(Calendar.getInstance().getTime()));
-                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                        String city;
-                        try {
-                            city = geocoder.getFromLocation(parseDouble(location.substring(0,location.indexOf(","))),parseDouble(location.substring(location.indexOf(",")+1,location.length())),1).get(0).getLocality();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        locationTextView.setText("Location: " + city + " (" + editTextFilledExposedDropdown.getText() + ")");
-
-                        // Add the current date as a Timestamp
-                        meal.put("Date", com.google.firebase.Timestamp.now());
-                        meal.put("StatDate", com.google.firebase.Timestamp.now());
-                        meal.put("Location", city);
-                        meal.put("Place", editTextFilledExposedDropdown.getText().toString());
-
-                        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        // User confirmed the dialog
-                                        // Replace uid with the actual user id
-                                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                                        // Create a reference to the storage bucket
-                                        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-
-                                        // Create a timestamp for the file name
-                                        SimpleDateFormat sdf = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault());
-                                        String fileName = sdf.format(new Date());
-
-                                        // Create a reference to the file location
-                                        StorageReference fileRef = storageRef.child(fileName);
-
-                                        // Upload the file
-                                        fileRef.putFile(foodImageUri)
-                                                .addOnSuccessListener(taskSnapshot -> {
-                                                    // Get the download URL of the uploaded file
-                                                    fileRef.getDownloadUrl()
-                                                            .addOnSuccessListener(uri -> {
-                                                                // Add the URL to the meal data
-                                                                meal.put("ImageURL", fileName);
-
-                                                                // Add the meal data to Firestore
-                                                                db.collection("users").document(uid).collection("meals")
-                                                                        .add(meal)
-                                                                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                                                            @Override
-                                                                            public void onSuccess(DocumentReference documentReference) {
-                                                                                Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
-                                                                            }
-                                                                        })
-                                                                        .addOnFailureListener(new OnFailureListener() {
-                                                                            @Override
-                                                                            public void onFailure(@NonNull Exception e) {
-                                                                                Toast.makeText(MainActivity.this, "Failed to add meal data to Firestore.", Toast.LENGTH_SHORT).show();
-                                                                            }
-                                                                        });
-                                                            })
-                                                            .addOnFailureListener(e -> {
-                                                                // Handle any errors
-                                                            });
-                                                })
-                                                .addOnFailureListener(e -> {
-                                                    // Handle any errors
-                                                });
-                                    }
-                                })
-                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        // User cancelled the dialog
-                                        // Nothing happens
-                                    }
-                                });
-
-                        // Create the AlertDialog object and return it
-                        builder.create().show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Please select Current Place of Interest.", Toast.LENGTH_SHORT).show();
-                    }
-                    }else {
-                            Toast.makeText(MainActivity.this, "No meal information in activity.", Toast.LENGTH_SHORT).show();
-                        }
-                }else{
+                    });
+                            } else {
                     askForLocationPermission();
                 }
             }
-
         });
-
     }
 
     @Override
