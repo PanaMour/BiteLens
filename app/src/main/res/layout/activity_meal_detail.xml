@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
+    android:background="@color/logobg"
     tools:context=".MealDetailActivity">
 
     <LinearLayout
@@ -25,7 +26,8 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:adjustViewBounds="true"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"/>
 
         <TextView
             android:id="@+id/meal_calories"
@@ -33,6 +35,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            android:layout_marginBottom="5dp"
             tools:text="Calories: " />
 
         <TextView
@@ -41,6 +45,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            android:layout_marginBottom="5dp"
             tools:text="Fat: " />
 
         <TextView
@@ -49,6 +55,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            android:layout_marginBottom="5dp"
             tools:text="Cholesterol: " />
 
         <TextView
@@ -57,6 +65,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            android:layout_marginBottom="5dp"
             tools:text="Sodium: " />
 
         <TextView
@@ -65,6 +75,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            android:layout_marginBottom="5dp"
             tools:text="Carbohydrates: " />
 
         <TextView
@@ -73,6 +85,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            android:layout_marginBottom="5dp"
             tools:text="Fiber: " />
 
         <TextView
@@ -81,6 +95,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            android:layout_marginBottom="5dp"
             tools:text="Sugar: " />
 
         <TextView
@@ -89,6 +105,8 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:padding="8dp"
+            android:background="@color/complimentary"
+            
             tools:text="Protein: " />
 
         <LinearLayout
