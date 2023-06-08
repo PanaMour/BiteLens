@@ -47,6 +47,15 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
+        mAuth = FirebaseAuth.getInstance();
+
+        // Check if User is already logged in
+        if(mAuth.getCurrentUser() != null){
+            // User is already logged in, so redirect to MainActivity
+            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+            finish();
+        }
+
         //Start
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
