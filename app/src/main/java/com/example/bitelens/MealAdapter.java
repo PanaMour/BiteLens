@@ -1,5 +1,6 @@
 package com.example.bitelens;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -25,7 +26,7 @@ import java.util.regex.Pattern;
 
 public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder> {
 
-    private List<Meal> mealList;
+    private static List<Meal> mealList;
 
     public MealAdapter(List<Meal> mealList) {
         this.mealList = mealList;
@@ -37,6 +38,8 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_meal, parent, false);
         return new MealViewHolder(itemView);
     }
+
+
 
     @Override
     public void onBindViewHolder(@NonNull MealViewHolder holder, int position) {
@@ -100,6 +103,18 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
             mealDate = view.findViewById(R.id.meal_date);
             mealPhoto = view.findViewById(R.id.meal_photo);
             mealLocation = view.findViewById(R.id.meal_location);
+
+            view.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+
+                if (position != RecyclerView.NO_POSITION) { // to check if item still exists
+                    Meal meal = mealList.get(position);
+
+                    Intent intent = new Intent(v.getContext(), MealDetailActivity.class);
+                    intent.putExtra("meal", meal);
+                    v.getContext().startActivity(intent);
+                }
+            });
         }
     }
 }

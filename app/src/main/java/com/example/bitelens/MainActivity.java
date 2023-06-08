@@ -296,7 +296,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                                                                                         .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                                                                             @Override
                                                                                             public void onSuccess(DocumentReference documentReference) {
-                                                                                                Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                                                String docId = documentReference.getId();
+                                                                                                documentReference.update("id", docId)
+                                                                                                        .addOnSuccessListener(aVoid -> {
+                                                                                                            Toast.makeText(MainActivity.this, "Meal data added to Firestore.", Toast.LENGTH_SHORT).show();
+                                                                                                        })
+                                                                                                        .addOnFailureListener(e -> {
+                                                                                                            Toast.makeText(MainActivity.this, "Failed to update id in Firestore.", Toast.LENGTH_SHORT).show();
+                                                                                                        });
                                                                                             }
                                                                                         })
                                                                                         .addOnFailureListener(new OnFailureListener() {
