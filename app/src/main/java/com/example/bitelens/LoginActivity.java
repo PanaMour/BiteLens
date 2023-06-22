@@ -30,11 +30,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
-
-    //Start
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle actionBarDrawerToggle;
-    //End
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button loginButton;
@@ -56,26 +51,6 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         }
 
-        //Start
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        getSupportActionBar().setTitle("Login");
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.drawable.bitelenslogo);
-        }
-
-        drawerLayout = findViewById(R.id.drawer_layout);
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        drawerLayout.addDrawerListener(actionBarDrawerToggle);
-        actionBarDrawerToggle.syncState();
-
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        setupDrawerContent(navigationView);
-        //End
-
         emailEditText = findViewById(R.id.email);
         passwordEditText = findViewById(R.id.password);
         loginButton = findViewById(R.id.login_button);
@@ -96,63 +71,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-    //Start
-    private void setupDrawerContent(NavigationView navigationView) {
-        navigationView.setNavigationItemSelectedListener(menuItem -> {
-            selectDrawerItem(menuItem);
-            return true;
-        });
-    }
-    private void selectDrawerItem(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.nav_dashboard:
-                // Handle the Dashboard menu item click
-                Intent dashboardIntent = new Intent(LoginActivity.this, DashboardActivity.class);
-                startActivity(dashboardIntent);
-                finish();
-                break;
-            case R.id.nav_mealplanning:
-                Intent mealplanningIntent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(mealplanningIntent);
-                finish();
-                break;
-            case R.id.nav_history:
-                Intent nav_history = new Intent(LoginActivity.this, StatisticsActivity.class);
-                startActivity(nav_history);
-                finish();
-                break;
-            case R.id.nav_statistics:
-                Intent nav_statistics = new Intent(LoginActivity.this, LoginActivity.class);
-                startActivity(nav_statistics);
-                finish();
-                break;
-            case R.id.nav_logout:
-                //
-                break;
-        }
-        drawerLayout.closeDrawers();
-    }
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        actionBarDrawerToggle.syncState();
-    }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        actionBarDrawerToggle.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            drawerLayout.openDrawer(GravityCompat.START);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-    //End
     private boolean isValidEmail(String email) {
         String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
         return email.matches(emailPattern);

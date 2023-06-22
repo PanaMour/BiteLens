@@ -113,14 +113,11 @@ public class SignupActivity extends AppCompatActivity {
                             String uid = firebaseUser.getUid();
                             String name = nameEditText.getText().toString().trim();
                             String surname = surnameEditText.getText().toString().trim();
-                            //TODO add location listener and permission check
                             int calories_consumed = 0;
                             int calories_goal = 2000;
-                            String location = "LOCATION";
-                            String token = ""; // You need to fetch the user token here
 
                             // Add user data to Firestore
-                            addDataToFirestore(uid, name, surname, location, token, calories_consumed, calories_goal);
+                            addDataToFirestore(uid, name, surname, calories_consumed, calories_goal);
 
                             // Navigate to LoginActivity
                             Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
@@ -134,8 +131,8 @@ public class SignupActivity extends AppCompatActivity {
                 });
     }
 
-    private void addDataToFirestore(String uid, String name, String surname, String location, String token, int consumed, int goal) {
-        User user = new User(uid, name, surname, location, token, consumed, goal);
+    private void addDataToFirestore(String uid, String name, String surname, int consumed, int goal) {
+        User user = new User(uid, name, surname, consumed, goal);
         db.collection("users")
                 .document(uid)
                 .set(user)
