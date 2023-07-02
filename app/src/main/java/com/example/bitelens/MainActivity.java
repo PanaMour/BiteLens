@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -77,6 +78,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -280,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
                                                         // Create a reference to the file location
                                                         StorageReference fileRef = storageRef.child(fileName);
-
+                                                        System.out.println(foodImageUri + " FOODIMAGEURI HEREREREREREREREERE!!!!!!!!!!!!!");
                                                         // Upload the file
                                                         fileRef.putFile(foodImageUri)
                                                                 .addOnSuccessListener(taskSnapshot -> {
@@ -513,6 +515,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 if (extras != null) {
                     bitmap = (Bitmap) extras.get("data");
                 }
+                // Create a file to save the bitmap
+                File bitmapFile = new File(this.getCacheDir(), "image.jpg");
+
+                try {
+                    // Create an OutputStream to write the bitmap data to the file
+                    OutputStream outputStream = new FileOutputStream(bitmapFile);
+
+                    // Compress the bitmap and write it to the OutputStream
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+
+                    // Close the OutputStream
+                    outputStream.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                foodImageUri = Uri.fromFile(bitmapFile);
+
+                // Create a Uri from the file path
+                //foodImageUri = Uri.fromFile(file);
+
             }
 
             if (bitmap != null) {
