@@ -3,7 +3,6 @@ package com.example.bitelens;
 import com.google.firebase.Timestamp;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class Meal implements Serializable {
     private String id;

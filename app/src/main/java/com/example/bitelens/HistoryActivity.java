@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -85,7 +84,7 @@ public class HistoryActivity extends AppCompatActivity {
                             mealAdapter = new MealAdapter(meals);
                             mealsRecyclerView.setAdapter(mealAdapter);
                         } else {
-                            // handle error
+
                         }
                     }
                 });

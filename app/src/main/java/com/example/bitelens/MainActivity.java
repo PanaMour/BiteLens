@@ -1,6 +1,5 @@
 package com.example.bitelens;
 
-import static android.content.ContentValues.TAG;
 
 import static java.lang.Double.parseDouble;
 
@@ -14,7 +13,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -27,8 +25,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -50,7 +46,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -170,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         editTextFilledExposedDropdown.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // No need to do anything here
+
             }
 
             @Override
@@ -184,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
             @Override
             public void afterTextChanged(Editable s) {
-                // No need to do anything here
+
             }
         });
         db = FirebaseFirestore.getInstance();
@@ -316,18 +311,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                                                                                         });
                                                                             })
                                                                             .addOnFailureListener(e -> {
-                                                                                // Handle any errors
+
                                                                             });
                                                                 })
                                                                 .addOnFailureListener(e -> {
-                                                                    // Handle any errors
+
                                                                 });
                                                     }
                                                 })
                                                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog, int id) {
                                                         // User cancelled the dialog
-                                                        // Nothing happens
                                                     }
                                                 });
 
@@ -532,10 +526,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     e.printStackTrace();
                 }
                 foodImageUri = Uri.fromFile(bitmapFile);
-
-                // Create a Uri from the file path
-                //foodImageUri = Uri.fromFile(file);
-
             }
 
             if (bitmap != null) {
@@ -596,7 +586,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     }
     private boolean isFoodRelated(String label) {
 
-        // A list of common food-related keywords
+        return true;
+        /*// A list of common food-related keywords
         String[] foodKeywords = {
                 "fruit", "vegetable", "meat",
                 "bread", "cereal", "cheese", "pizza", "pasta",
@@ -616,7 +607,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             }
         }
 
-        return false; // Return false if none of the keywords were found
+        return false; // Return false if none of the keywords were found*/
     }
 
     private void fetchNutritionInfo(List<FoodConfidence> foodConfidences) {

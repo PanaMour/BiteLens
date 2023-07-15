@@ -23,7 +23,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,11 +39,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -84,15 +80,12 @@ public class DashboardActivity extends AppCompatActivity {
                             }
 
                             // Fetch calories_consumed and calories_goal from the database
-                            //Integer consumedFromDatabase = documentSnapshot.getLong("calories_consumed").intValue();
                             Integer goalFromDatabase = documentSnapshot.getLong("calories_goal").intValue();
 
                             // Update the UI with fetched values
-                            //caloriesConsumed.setText(String.valueOf(consumedFromDatabase));
                             caloriesGoal.setText(String.valueOf(goalFromDatabase));
 
                             // Update progress and text values
-                            //consumed = consumedFromDatabase;
                             goal = goalFromDatabase;
                             calculateTotalCaloriesForToday();
                             float progress = (float) consumed / goal * 100;
@@ -146,9 +139,6 @@ public class DashboardActivity extends AppCompatActivity {
         goal = Integer.parseInt(goalStr);
 
         calculateTotalCaloriesForToday();
-
-
-
     }
     public com.google.firebase.Timestamp getCurrentDayTimestamp() {
         // Get the current date
@@ -268,8 +258,7 @@ public class DashboardActivity extends AppCompatActivity {
         // Assuming you have the user's UID, for example, from FirebaseAuth
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // Update the calories goal in your database here
-        // Call the appropriate method depending on which database you are using
+        // Update the calories goal in your database
         updateCaloriesGoalInDatabase(uid, newGoal);
     }
 
@@ -286,12 +275,6 @@ public class DashboardActivity extends AppCompatActivity {
     }
     private void selectDrawerItem(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            /*case R.id.nav_dashboard:
-                // Handle the Dashboard menu item click
-                Intent dashboardIntent = new Intent(DashboardActivity.this, MainActivity.class);
-                startActivity(dashboardIntent);
-                finish();
-                break;*/
             case R.id.nav_mealplanning:
                 Intent mealplanningIntent = new Intent(DashboardActivity.this, MainActivity.class);
                 startActivity(mealplanningIntent);

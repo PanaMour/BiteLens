@@ -32,7 +32,7 @@ public class BarGraphView extends View {
             paint.setStrokeWidth(2);
             paint.setTextSize(30); // Set a text size for the labels.
 
-            // Draw y-axis, note that it starts at getHeight() - 200 now, not at 0.
+            // Draw y-axis
             canvas.drawLine(100, getHeight() - 200, 100, 0, paint);
 
             // Draw x-axis
@@ -49,7 +49,7 @@ public class BarGraphView extends View {
             // Draw y-axis labels
             for (int i = 500; i <= maxValue; i += 500) {
                 int textHeight = (int) (getHeight() - 200 - ((i / (float) maxValue) * (getHeight() - 200)));
-                canvas.drawText(String.valueOf(i), 30, textHeight + 15, paint); // Adjusted x-coordinate from 50 to 30
+                canvas.drawText(String.valueOf(i), 30, textHeight + 15, paint);
             }
 
             // Set the paint color for drawing the bars

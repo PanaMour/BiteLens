@@ -78,7 +78,7 @@ public class MealAdapter extends RecyclerView.Adapter<MealAdapter.MealViewHolder
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                // Handle any errors
+
             }
         });
         holder.mealLocation.setText("Location: "+meal.getLocation() + " (" + meal.getPlace() +")");
